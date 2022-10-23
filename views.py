@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from models import *
 
 app = Flask(__name__)
@@ -11,6 +11,12 @@ def goods_list():
         'title': 'Магазин газового оборудования',
         'table': db.user,
     })
+
+
+@app.route('/register')
+def registration():
+    if request.method == 'POST':
+        pass
 
 
 if __name__ == "__main__":
