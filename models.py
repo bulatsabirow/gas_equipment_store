@@ -17,8 +17,11 @@ class Selector(BaseSelector):
     def select(self, cursor):
         return super().select(cursor, f'SELECT "name", email, is_admin FROM "user"')
 
-    def insert(self, cursor, con, *args):
-        super().insert(cursor, f'INSERT INTO "user"("name", email, is_admin) VALUES {args}', con)
+    def insert(self, cursor, con, password, *args):
+        print(f'INSERT INTO "user"("name", email, is_admin, password) VALUES ' + f'{args}'[:-1]
+                       + f', MD5("{password}"));')
+        super().insert(cursor, f'INSERT INTO "user"("name", email, is_admin, password) VALUES' + f'{args}'[:-1]
+                       + f', MD5(\'{password}\'));', con)
 
 
 class DataBase:
@@ -35,8 +38,8 @@ class DataBase:
     def user(self):
         return self.selector.select(self.cur)
 
-    def user_insert(self, *args):
-        return self.selector.insert(self.cur, self.con, *args)
+    def user_insert(self, password, *args):
+        return self.selector.insert(self.cur, self.con, password, *args)
 
 
 
