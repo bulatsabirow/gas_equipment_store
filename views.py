@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from models import *
 
 app = Flask(__name__)
@@ -12,10 +12,15 @@ def goods_list():
     })
 
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def registration():
+    print(request.method)
     if request.method == 'POST':
-        pass
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        db.user_insert(password, email, name)
+    return render_template('register.html')
 
 
 if __name__ == "__main__":

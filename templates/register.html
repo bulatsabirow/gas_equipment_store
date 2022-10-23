@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
 {% block body %}
-    <form action="" method="post">
+    <form method="post">
+        <label for="">mail:
+            <input type="text" name="email" placeholder="Адрес почты...">
+        </label>
         <label for="">Имя:
-            <input type="text">
+            <input type="text" name="name" placeholder="Имя...">
         </label>
         <label>Пароль:
-            <input type="text">
+            <input type="text" name="password" placeholder="Пароль...">
         </label>
+        <button type="submit">Зарегистрироваться</button>
     </form>
 {% endblock %}

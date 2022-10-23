@@ -17,10 +17,10 @@ class Selector(BaseSelector):
     def select(self, cursor):
         return super().select(cursor, f'SELECT "name", email, is_admin FROM "user"')
 
-    def insert(self, cursor, con, password, *args):
-        print(f'INSERT INTO "user"("name", email, is_admin, password) VALUES ' + f'{args}'[:-1]
-                       + f', MD5("{password}"));')
-        super().insert(cursor, f'INSERT INTO "user"("name", email, is_admin, password) VALUES' + f'{args}'[:-1]
+    def insert(self, cursor, con, password, *args, is_admin=False):
+        print(f'INSERT INTO "user"("name", email, password) VALUES' + f'{args}'[:-1]
+                       + f', MD5(\'{password}\'));')
+        super().insert(cursor, f'INSERT INTO "user"("name", email, password) VALUES' + f'{args}'[:-1]
                        + f', MD5(\'{password}\'));', con)
 
 
