@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block body %}
     <h1>{{ title }}</h1>
-    {{ table }}
-    <a href="{{  url_for('registration') }}">Зарегистрироваться</a>
+    <h2>
+        {% if current_user.is_authenticated %}
+            Привет, {{ current_user.name }}!
+        {% endif %}
+    </h2>
+    <a href="{{  url_for('registration') }}">Зарегистрироваться</a>|
+    a[href="{{ url_for('a') }}"]
 {% endblock %}

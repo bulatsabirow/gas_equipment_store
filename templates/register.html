@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
+    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
     <form method="post">
         <label for="">mail:
             <input type="text" name="email" placeholder="Адрес почты...">
