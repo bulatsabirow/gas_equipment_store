@@ -23,7 +23,7 @@ class BaseSelector:
 class UserSelector(BaseSelector):
     def insert(self):
         return super(UserSelector, self).insert(f'INSERT INTO "user"("name","password",email,is_admin)' +
-                                                f' VALUES (\'{self.name}\',MD5(\'{self.password}\'),' +
+                                                f' VALUES (\'{self.name}\',\'{self.password}\',' +
                                                 f'\'{self.email}\',false)')
 
     @staticmethod
@@ -48,6 +48,19 @@ class UserModel(BaseObjectModel, UserMixin, UserSelector):
 
     def get_id(self):
         return self.email
+
+    @staticmethod
+    def find_user(email, password):
+        response = BaseSelector.select(f'SELECT "name", email, "password" FROM "user"'
+                                       f' WHERE email = \'{email}\' '
+                                       f'AND "password" = \'{password}\'')
+        if len(response) == 0:
+            return None
+        response = response[0]
+        return UserModel(response[0], response[1], response[2])
+
+
+
 
 
 
