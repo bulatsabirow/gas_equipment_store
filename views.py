@@ -1,5 +1,4 @@
 from datetime import timedelta
-import flask_bcrypt
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -48,8 +47,6 @@ def auth():
         password = request.form.get('password')
         print(password)
         user = UserModel.find_user(email)
-        print('password:', user.password)
-        print(check_password_hash(user.password, password))
         if user is not None and check_password_hash(user.password, password):
             login_user(user)
         else:

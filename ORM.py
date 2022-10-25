@@ -8,7 +8,7 @@ CON = psycopg2.connect(user='postgres',
 CURSOR = CON.cursor()
 
 
-class BaseSelector:
+class BaseInterface:
     @staticmethod
     def select(query):
         CURSOR.execute(query)
@@ -20,20 +20,41 @@ class BaseSelector:
         CON.commit()
 
 
-class UserSelector(BaseSelector):
+class UserInterface(BaseInterface):
     def insert(self):
-        return super(UserSelector, self).insert(f'INSERT INTO "user"("name","password",email,is_admin)' +
-                                                f' VALUES (\'{self.name}\',\'{self.password}\',' +
-                                                f'\'{self.email}\',false)')
+        return super(UserInterface, self).insert(f'INSERT INTO "user"("name","password",email,is_admin)' +
+                                                 f' VALUES (\'{self.name}\',\'{self.password}\',' +
+                                                 f'\'{self.email}\',false)')
 
     @staticmethod
     def select(email):
-        response = BaseSelector.select(f'SELECT "name", email, "password", is_admin FROM "user"'
-                                       f' WHERE email = \'{email}\'')
+        response = BaseInterface.select(f'SELECT "name", email, "password", is_admin FROM "user"'
+                                        f' WHERE email = \'{email}\'')
         if not response:
             return None
         response = response[0]
-        return UserModel(response[0], response[1], response[2], response[3])
+        return UserModel(*response)
+
+
+class GoodsInterface(BaseInterface):
+    def insert(self):
+        category = 'null' if self.category is None else f'{self.category}'
+        brand = 'null' if self.brand is None else f'{self.brand}'
+        return super(GoodsInterface, self).insert(f'INSERT INTO goods(title, description, price, image,'
+                                                  f' category, brand) VALUES (\'{self.title}\','
+                                                  f'\'{self.description}\',{self.price},\'{self.image}\','
+                                                  f' {category}, {brand});')
+
+    @staticmethod
+    def select(goods_id):
+        return BaseInterface.select(f'SELECT title, description, price, image, category, brand'
+                                    f' FROM goods WHERE id = {goods_id};')
+
+    @staticmethod
+    def all():
+        return (GoodsModel(*item) for item in BaseInterface.select(f'SELECT title, description, price, image,'
+                                                                   f' category, brand'
+                                                                   f' FROM goods;'))
 
 
 class BaseObjectModel:
@@ -41,7 +62,7 @@ class BaseObjectModel:
         return str(tuple(self.__dict__.values()))
 
 
-class UserModel(BaseObjectModel, UserMixin, UserSelector):
+class UserModel(BaseObjectModel, UserMixin, UserInterface):
     def __init__(self, name, email, password, is_admin=False):
         self.name = name
         self.email = email
@@ -58,6 +79,17 @@ class UserModel(BaseObjectModel, UserMixin, UserSelector):
         if not response:
             return None
         return response
+
+
+class GoodsModel(BaseObjectModel, GoodsInterface):
+    def __init__(self, title, description, price, image, category=None, brand=None):
+        self.title = title
+        self.description = description
+        self.price = price
+        self.image = image
+        self.category = category
+        self.brand = brand
+
 
 
 
