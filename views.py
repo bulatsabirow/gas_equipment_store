@@ -1,7 +1,7 @@
 from datetime import timedelta
 import flask_bcrypt
 from flask import Flask, render_template, request, redirect, url_for
-from flask_login import current_user, login_user
+from flask_login import current_user, login_user, logout_user
 
 from ORM import *
 from login import *
@@ -30,7 +30,7 @@ def registration():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
-        password = bcrypt.generate_password_hash(request.form.get('password'))
+        password = bcrypt.generate_password_hash(request.form.get('password'), 32).decode('utf-8')
         is_admin = False
         user = UserModel(name, email, password, is_admin)
         UserModel.insert(user)
@@ -45,7 +45,8 @@ def auth():
     message = None
     if request.method == 'POST':
         email = request.form.get('email')
-        password = bcrypt.generate_password_hash(request.form.get('password'))
+        password = bcrypt.generate_password_hash(request.form.get('password'), 32).decode('utf-8')
+        print(password)
         user = UserModel.find_user(email, password)
         if user is not None:
             login_user(user)
@@ -54,6 +55,12 @@ def auth():
     return render_template('auth.html', **{
         'message': message,
     })
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect('goods')
 
 
 if __name__ == "__main__":
