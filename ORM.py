@@ -1,4 +1,3 @@
-from flask_bcrypt import check_password_hash
 from flask_login import UserMixin
 import psycopg2
 CON = psycopg2.connect(user='postgres',
@@ -34,7 +33,7 @@ class UserSelector(BaseSelector):
         if not response:
             return None
         response = response[0]
-        return UserModel(response[0], response[2], response[1], response[3])
+        return UserModel(response[0], response[1], response[2], response[3])
 
 
 class BaseObjectModel:
@@ -53,11 +52,10 @@ class UserModel(BaseObjectModel, UserMixin, UserSelector):
         return self.email
 
     @staticmethod
-    def find_user(email, password):
+    def find_user(email):
         response = UserModel.select(email)
         print(response)
-        print(check_password_hash(password, response.password))
-        if not response or not check_password_hash(password, response.password):
+        if not response:
             return None
         return response
 

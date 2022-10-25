@@ -2,12 +2,12 @@ from datetime import timedelta
 import flask_bcrypt
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import current_user, login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from ORM import *
 from login import *
 
 app = Flask(__name__)
-bcrypt = flask_bcrypt.Bcrypt(app)
 app.secret_key = '12345'
 app.permanent_session_lifetime = timedelta(days=365)
 login_manager.init_app(app)
@@ -30,7 +30,7 @@ def registration():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
-        password = bcrypt.generate_password_hash(request.form.get('password'), 32).decode('utf-8')
+        password = generate_password_hash(request.form.get('password'))
         is_admin = False
         user = UserModel(name, email, password, is_admin)
         UserModel.insert(user)
@@ -45,10 +45,12 @@ def auth():
     message = None
     if request.method == 'POST':
         email = request.form.get('email')
-        password = bcrypt.generate_password_hash(request.form.get('password'), 32).decode('utf-8')
+        password = request.form.get('password')
         print(password)
-        user = UserModel.find_user(email, password)
-        if user is not None:
+        user = UserModel.find_user(email)
+        print('password:', user.password)
+        print(check_password_hash(user.password, password))
+        if user is not None and check_password_hash(user.password, password):
             login_user(user)
         else:
             message = 'Неправильные адрес электронной почты или пароль'
