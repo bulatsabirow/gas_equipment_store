@@ -52,9 +52,11 @@ class GoodsInterface(BaseInterface):
 
     @staticmethod
     def all():
-        return (GoodsModel(*item) for item in BaseInterface.select(f'SELECT title, description, price, image,'
+        x = [GoodsModel(*item) for item in BaseInterface.select(f'SELECT title, description, price, image,'
                                                                    f' category, brand'
-                                                                   f' FROM goods;'))
+                                                                   f' FROM goods;')]
+        print(x)
+        return x
 
 
 class BaseObjectModel:

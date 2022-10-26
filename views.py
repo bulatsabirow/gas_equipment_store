@@ -21,6 +21,7 @@ def load_user(email):
 def goods_list():
     return render_template('main.html', **{
         'title': 'Магазин газового оборудования',
+        'goods': GoodsModel.all(),
     })
 
 
