@@ -4,10 +4,11 @@ from flask_login import current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ORM import *
+from forms import RegisterForm
 from login import *
-
 app = Flask(__name__)
 app.secret_key = '12345'
+app.config['SECRET_KEY'] = 'abc'
 app.permanent_session_lifetime = timedelta(days=365)
 login_manager.init_app(app)
 
@@ -27,17 +28,18 @@ def goods_list():
 
 @app.route('/register', methods=['GET', 'POST'])
 def registration():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        password = generate_password_hash(request.form.get('password'))
+    form = RegisterForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        email = form.email.data
+        password = generate_password_hash(form.password.data)
         is_admin = False
         user = UserModel(name, email, password, is_admin)
-        UserModel.insert(user)
+        user.insert()
         login_user(user)
         print(current_user.is_authenticated)
 
-    return render_template('register.html')
+    return render_template('register.html', form=form)
 
 
 @app.route('/auth', methods=['POST', 'GET'])

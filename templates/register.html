@@ -2,15 +2,28 @@
 {% block body %}
     <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
     <form method="post">
-        <label for="">mail:
-            <input type="text" name="email" placeholder="Адрес почты...">
-        </label>
-        <label for="">Имя:
-            <input type="text" name="name" placeholder="Имя...">
-        </label>
-        <label>Пароль:
-            <input type="text" name="password" placeholder="Пароль...">
-        </label>
-        <button type="submit">Зарегистрироваться</button>
+{#        <label for="">mail:#}
+{#            <input type="text" name="email" placeholder="Адрес почты...">#}
+{#        </label>#}
+{#        <label for="">Имя:#}
+{#            <input type="text" name="name" placeholder="Имя...">#}
+{#        </label>#}
+{#        <label>Пароль:#}
+{#            <input type="text" name="password" placeholder="Пароль...">#}
+{#        </label>#}
+{#        <button type="submit">Зарегистрироваться</button>#}
+            {{ form.csrf_token() }}
+
+            {% for field in form if field.name != 'csrf_token' %}
+                <label>
+                    {% if field.name != 'submit' %}
+                        {{ field.label() }}
+                    {% endif %}
+                    {{ field }}
+                </label>
+                {% for error in form.errors %}
+                    {{ error }}
+                {% endfor %}
+            {% endfor %}
     </form>
 {% endblock %}

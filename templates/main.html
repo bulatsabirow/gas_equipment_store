@@ -2,7 +2,7 @@
 {% block body %}
     <h1>{{ title }}</h1>
     <h2>
-        {% if current_user.is_authenticated %}gas_equipment
+        {% if current_user.is_authenticated %}
             Привет, {{ current_user.name }}!
         {% endif %}
     </h2>
@@ -14,6 +14,7 @@
     {% endif %}
     {% for product in goods %}
         <p>{{ product.title }}</p>
+        <p>{{ product.description[:15] }}...</p>
         <p>{{ product.price }}</p>
     {% endfor %}
 {% endblock %}
