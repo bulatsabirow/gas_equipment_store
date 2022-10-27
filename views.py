@@ -4,7 +4,7 @@ from flask_login import current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ORM import *
-from forms import RegisterForm
+from forms import RegisterForm, AuthForm
 from login import *
 app = Flask(__name__)
 app.secret_key = '12345'
@@ -45,10 +45,10 @@ def registration():
 @app.route('/auth', methods=['POST', 'GET'])
 def auth():
     message = None
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        print(password)
+    form = AuthForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
         user = UserModel.find_user(email)
         if user is not None and check_password_hash(user.password, password):
             login_user(user)
@@ -56,6 +56,7 @@ def auth():
             message = 'Неправильные адрес электронной почты или пароль'
     return render_template('auth.html', **{
         'message': message,
+        'form': form,
     })
 
 
