@@ -66,5 +66,12 @@ def logout():
     return redirect('goods')
 
 
+@app.route('/product/<int:id>')
+def product(id):
+    return render_template('product.html', **{
+
+    })
+
+
 if __name__ == "__main__":
     app.run(port=8000, debug=True)
