@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block body %}
+    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
+    {% if not cart %}
+        <p><b>В вашей корзине нет товаров...</b></p>
+    {% else %}
+        {% for item in cart %}
+            <p>{{ item.product }}</p>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

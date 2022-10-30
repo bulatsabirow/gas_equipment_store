@@ -66,7 +66,7 @@ def logout():
     return redirect('goods')
 
 
-@app.route('/product/<int:id>')
+@app.route('/product/<int:id>', methods=['POST', 'GET'])
 def product(id):
     if request.method == 'POST':
         if session.get('cart', None) is None:
@@ -76,8 +76,17 @@ def product(id):
              'count': request.form.get('count', 0),
              }
         )
+        return redirect(url_for('cart'))
+
     return render_template('product.html', **{
         'product': GoodsModel.select(id),
+    })
+
+
+@app.route('/cart')
+def cart():
+    return render_template('cart.html', **{
+        'cart': session.get('cart', None),
     })
 
 
