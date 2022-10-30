@@ -69,7 +69,7 @@ def logout():
 @app.route('/product/<int:id>')
 def product(id):
     return render_template('product.html', **{
-
+        'product': GoodsModel.select(id),
     })
 
 

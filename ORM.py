@@ -47,14 +47,14 @@ class GoodsInterface(BaseInterface):
 
     @staticmethod
     def select(goods_id):
-        return BaseInterface.select(f'SELECT title, description, price, image, category, brand'
-                                    f' FROM goods WHERE id = {goods_id};')
+        return BaseInterface.select(f'SELECT id, title, description, price, image, category, brand'
+                                    f' FROM goods WHERE id = {goods_id};')[0]
 
     @staticmethod
     def all():
-        x = [GoodsModel(*item) for item in BaseInterface.select(f'SELECT title, description, price, image,'
-                                                                   f' category, brand'
-                                                                   f' FROM goods;')]
+        x = [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
+                                                                f' category, brand'
+                                                                f' FROM goods;')]
         print(x)
         return x
 
@@ -84,7 +84,8 @@ class UserModel(BaseObjectModel, UserMixin, UserInterface):
 
 
 class GoodsModel(BaseObjectModel, GoodsInterface):
-    def __init__(self, title, description, price, image, category=None, brand=None):
+    def __init__(self, id, title, description, price, image, category=None, brand=None):
+        self.id = id
         self.title = title
         self.description = description
         self.price = price
