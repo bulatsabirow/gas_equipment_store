@@ -43,12 +43,13 @@ class GoodsInterface(BaseInterface):
         return super(GoodsInterface, self).insert(f'INSERT INTO goods(title, description, price, image,'
                                                   f' category, brand) VALUES (\'{self.title}\','
                                                   f'\'{self.description}\',{self.price},\'{self.image}\','
-                                                  f' {category}, {brand});')
+                                                  f' {category}, {brand}, {self.count};')
 
     @staticmethod
     def select(goods_id):
-        return BaseInterface.select(f'SELECT id, title, description, price, image, category, brand'
-                                    f' FROM goods WHERE id = {goods_id};')[0]
+        response = BaseInterface.select(f'SELECT id, title, description, price, image, category, brand, count'
+                                        f' FROM goods WHERE id = {goods_id};')[0]
+        return GoodsModel(*response)
 
     @staticmethod
     def all():
@@ -62,6 +63,13 @@ class GoodsInterface(BaseInterface):
 class BaseObjectModel:
     def __repr__(self):
         return str(tuple(self.__dict__.values()))
+
+    def __iter__(self):
+        for item in self.__dict__.values():
+            yield item
+
+    def to_json(self):
+        return {key: value for key, value in self.__dict__.items()}
 
 
 class UserModel(BaseObjectModel, UserMixin, UserInterface):
@@ -93,6 +101,11 @@ class GoodsModel(BaseObjectModel, GoodsInterface):
         self.category = category
         self.brand = brand
         self.count = count
+
+    def __iter__(self):
+        for item in self.__dict__.items():
+            if item[0] != 'count':
+                yield item[1]
 
 
 
