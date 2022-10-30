@@ -53,7 +53,7 @@ class GoodsInterface(BaseInterface):
     @staticmethod
     def all():
         x = [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
-                                                                f' category, brand'
+                                                                f' category, brand, count'
                                                                 f' FROM goods;')]
         print(x)
         return x
@@ -84,7 +84,7 @@ class UserModel(BaseObjectModel, UserMixin, UserInterface):
 
 
 class GoodsModel(BaseObjectModel, GoodsInterface):
-    def __init__(self, id, title, description, price, image, category=None, brand=None):
+    def __init__(self, id, title, description, price, image, category=None, brand=None, count=0):
         self.id = id
         self.title = title
         self.description = description
@@ -92,6 +92,7 @@ class GoodsModel(BaseObjectModel, GoodsInterface):
         self.image = image
         self.category = category
         self.brand = brand
+        self.count = count
 
 
 

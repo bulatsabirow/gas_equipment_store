@@ -4,4 +4,11 @@
     {% for attr in product %}
         <p>{{ attr }}</p>
     {% endfor %}
+    <form method="post">
+        <label>
+            Количество товара: <input type="number" value="1" name="count">
+        </label>
+        <button>Добавить в корзину</button>
+    </form>
+    <script src="{{ url_for('static', filename='js/product.js') }}"></script>
 {% endblock %}

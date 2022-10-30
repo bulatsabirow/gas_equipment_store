@@ -1,5 +1,5 @@
 from datetime import timedelta
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -68,6 +68,14 @@ def logout():
 
 @app.route('/product/<int:id>')
 def product(id):
+    if request.method == 'POST':
+        if session.get('cart', None) is None:
+            session['cart'] = []
+        session['cart'].append(
+            {'product': GoodsModel.select(id),
+             'count': request.form.get('count', 0),
+             }
+        )
     return render_template('product.html', **{
         'product': GoodsModel.select(id),
     })
