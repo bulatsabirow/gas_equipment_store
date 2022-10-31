@@ -5,7 +5,10 @@
         <p><b>В вашей корзине нет товаров...</b></p>
     {% else %}
         {% for item in cart %}
-            <p>{{ cart[item] }}</p>
+            <p>{{ item }}</p>
+            <p>Количество товаров: {{ session['cart'][item.id] }}</p>
+            <p>Стоимость: {{ session['cart'][item.id] * item.price }}</p>
         {% endfor %}
+        <p><b>Всего: {{ total_amount }}</b></p>
     {% endif %}
 {% endblock %}

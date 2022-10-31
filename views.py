@@ -71,7 +71,6 @@ def logout():
 def product(id):
     session.modified = True
     value = GoodsModel.select(id).to_json()
-    value['id'] = str(value['id'])
     if request.method == 'POST':
         if session.get('cart', None) is None:
             session['cart'] = {}
@@ -86,9 +85,11 @@ def product(id):
 
 @app.route('/cart')
 def cart():
-    print(session)
+    goods = GoodsModel.find_all(session['cart'])
+    total_amount = sum((item.price * session['cart'][item.id] for item in goods))
     return render_template('cart.html', **{
-        'cart': session.get('cart', None),
+        'cart': goods,
+        'total_amount': total_amount,
     })
 
 

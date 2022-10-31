@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from flask_login import UserMixin
 import psycopg2
 CON = psycopg2.connect(user='postgres',
@@ -59,6 +61,13 @@ class GoodsInterface(BaseInterface):
         print(x)
         return x
 
+    @staticmethod
+    def find_all(goods_id: Iterator):
+        return [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
+                                                                   f' category, brand, count'
+                                                                   f' FROM goods WHERE id'
+                                                                   f' IN ({", ".join(goods_id)});')]
+
 
 class BaseObjectModel:
     def __repr__(self):
@@ -93,7 +102,7 @@ class UserModel(BaseObjectModel, UserMixin, UserInterface):
 
 class GoodsModel(BaseObjectModel, GoodsInterface):
     def __init__(self, id, title, description, price, image, category=None, brand=None, count=0):
-        self.id = id
+        self.id = str(id)
         self.title = title
         self.description = description
         self.price = price
