@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -21,9 +22,24 @@ def load_user(email):
 
 @app.route('/goods')
 def goods_list():
+    text_filter = request.args.get('text_filter', None)
+    brands = []
+    categories = []
+    for param in request.args:
+        if param in BRAND_CHOICES:
+            brands.append(request.args.get(param))
+        if param in CATEGORY_CHOICES:
+            categories.append(request.args.get(param))
+    if text_filter or brands or categories:
+        goods = GoodsModel.filter(text=text_filter, brand=brands if brands else None,
+                                  category=categories if categories else None)
+    else:
+        goods = GoodsModel.all()
     return render_template('main.html', **{
         'title': 'Магазин газового оборудования',
-        'goods': GoodsModel.all(),
+        'goods': goods,
+        'categories': CATEGORY_CHOICES,
+        'brands': BRAND_CHOICES,
     })
 
 

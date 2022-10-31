@@ -1,4 +1,9 @@
+from abc import ABC
 from typing import Iterator
+
+CATEGORY_CHOICES = {'gas stoves', 'geysers', 'gas meter', 'kitchen hoods'}
+BRAND_CHOICES = {'Atlan', 'Graude', 'De Luxe', 'Gefest', 'Oasis', 'Beko'}
+
 
 from flask_login import UserMixin
 import psycopg2
@@ -38,12 +43,12 @@ class UserInterface(BaseInterface):
         return UserModel(*response)
 
 
-class GoodsInterface(BaseInterface):
+class GoodsInterface(BaseInterface, ABC):
     def insert(self):
         category = 'null' if self.category is None else f'{self.category}'
         brand = 'null' if self.brand is None else f'{self.brand}'
         return super(GoodsInterface, self).insert(f'INSERT INTO goods(title, description, price, image,'
-                                                  f' category, brand) VALUES (\'{self.title}\','
+                                                  f' category, brand, count) VALUES (\'{self.title}\','
                                                   f'\'{self.description}\',{self.price},\'{self.image}\','
                                                   f' {category}, {brand}, {self.count};')
 
@@ -67,6 +72,32 @@ class GoodsInterface(BaseInterface):
                                                                    f' category, brand, count'
                                                                    f' FROM goods WHERE id'
                                                                    f' IN ({", ".join(goods_id)});')]
+    @staticmethod
+    def filter(text: str = '', brand=None, category=None):
+        if text is None:
+            text = ''
+        if brand is None:
+            brand = ' (brand IS NOT NULL OR NULL)'
+        else:
+            brand = ' brand IN (' + ','.join((f'\'{item}\'' for item in brand)) + ')'
+        if category is None:
+            category = ' (category IS NOT NULL OR NULL)'
+        else:
+            category = ' category IN (' + ','.join((f'\'{item}\'' for item in category)) + ')'
+
+        print(category)
+        print(brand)
+
+        return [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
+                                                                   f'category, brand, count'
+                                                                   f' FROM goods'
+                                                                   f' WHERE (title ILIKE \'%{text}%\' OR'
+                                                                   f' description ILIKE \'%{text}%\') AND'
+                                                                   f' {brand} AND {category};')]
+
+    @staticmethod
+    def filter_by_brand(brand: str):
+        pass
 
 
 class BaseObjectModel:
@@ -115,6 +146,10 @@ class GoodsModel(BaseObjectModel, GoodsInterface):
         for item in self.__dict__.items():
             if item[0] != 'count':
                 yield item[1]
+
+    @staticmethod
+    def f():
+        return BaseInterface.select(f'SELECT enum_range(NULL::category_choices);')
 
 
 

@@ -15,6 +15,24 @@
     <a href="{{ url_for('cart') }}">Моя корзина</a>
     <form method="get">
         <input type="text" name="text_filter" placeholder="Введите имя или описание товара...">
+        <br>
+        <b>Категории</b>
+        <br>
+        {% for item in categories %}
+            <label>{{ item }}
+                <input type="checkbox" name="{{ item }}" value="{{ item }}">
+            </label>
+            <br>
+        {% endfor %}
+        <br>
+        <b>Бренды</b>
+        {% for item in brands %}
+            <label>
+                {{ item }}
+            <input type="checkbox" name="{{ item }}" value="{{ item }}">
+            </label>
+            <br>
+        {% endfor %}
         <button>Найти!</button>
     </form>
     {% for product in goods %}
