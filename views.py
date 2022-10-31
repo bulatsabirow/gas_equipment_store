@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ORM import *
 from forms import RegisterForm, AuthForm
 from login import *
+
 app = Flask(__name__)
 app.secret_key = '12345'
 app.config['SECRET_KEY'] = '12345'
@@ -71,20 +72,11 @@ def product(id):
     session.modified = True
     value = GoodsModel.select(id).to_json()
     value['id'] = str(value['id'])
-    print('value:', value)
-    print(session)
     if request.method == 'POST':
         if session.get('cart', None) is None:
             session['cart'] = {}
-        if value['id'] not in session['cart']:
-            session['cart'][value['id']] = {
-                'product': value,
-                'count': int(request.form.get('count', 0)),
-            }
-        else:
-            print('!!!!!!!!!!!!!!!')
-            session['cart'][value['id']]['count'] += int(request.form.get('count', 0))
-            print(session)
+        session['cart'][value['id']] = session['cart'].get(value['id'], 0) + \
+                                       int(request.form.get('count', 0))
         return redirect(url_for('cart'))
 
     return render_template('product.html', **{
