@@ -1,8 +1,8 @@
 from abc import ABC
 from typing import Iterator
 
-CATEGORY_CHOICES = {'gas stoves', 'geysers', 'gas meter', 'kitchen hoods'}
-BRAND_CHOICES = {'Atlan', 'Graude', 'De Luxe', 'Gefest', 'Oasis', 'Beko'}
+CATEGORY_CHOICES = {'gas stoves', 'geysers', 'gas meter', 'kitchen hoods', 'null_category'}
+BRAND_CHOICES = {'Atlan', 'Graude', 'De Luxe', 'Gefest', 'Oasis', 'Beko', 'null_brand'}
 
 
 from flask_login import UserMixin
@@ -72,21 +72,41 @@ class GoodsInterface(BaseInterface, ABC):
                                                                    f' category, brand, count'
                                                                    f' FROM goods WHERE id'
                                                                    f' IN ({", ".join(goods_id)});')]
+
     @staticmethod
     def filter(text: str = '', brand=None, category=None):
+        print('!!!!')
         if text is None:
             text = ''
         if brand is None:
-            brand = ' (brand IS NOT NULL OR NULL)'
+            brand = ' (brand IS NOT NULL OR brand IS NULL)'
+        elif brand == ['null_brand']:
+            brand = ' (brand IS NULL) '
         else:
-            brand = ' brand IN (' + ','.join((f'\'{item}\'' for item in brand)) + ')'
+            additional = ''
+            if 'null_brand' in brand:
+                additional = ' OR brand is NULL'
+            brand = ' (brand IN (' + ','.join((f'\'{item}\'' for item in brand if item != 'null_brand')) + ')'\
+                    + additional + ')'
         if category is None:
-            category = ' (category IS NOT NULL OR NULL)'
+            category = ' (category IS NOT NULL OR category IS NULL)'
+        elif category == ['null_category']:
+            category = ' (category IS NULL) '
         else:
-            category = ' category IN (' + ','.join((f'\'{item}\'' for item in category)) + ')'
+            additional = ''
+            if 'null_category' in category:
+                additional = ' OR category is NULL'
+            category = ' (category IN (' + ','.join((f'\'{item}\'' for item in category if item != 'null_category'))\
+                       + ')' + additional + ')'
 
-        print(category)
-        print(brand)
+        print('cat:', category)
+        print('brand:', brand)
+        print(f'SELECT id, title, description, price, image,'
+                                                                   f'category, brand, count'
+                                                                   f' FROM goods'
+                                                                   f' WHERE (title ILIKE \'%{text}%\' OR'
+                                                                   f' description ILIKE \'%{text}%\') AND'
+                                                                   f' {brand} AND {category};')
 
         return [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
                                                                    f'category, brand, count'

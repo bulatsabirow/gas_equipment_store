@@ -30,6 +30,7 @@ def goods_list():
             brands.append(request.args.get(param))
         if param in CATEGORY_CHOICES:
             categories.append(request.args.get(param))
+    print(text_filter, brands, categories)
     if text_filter or brands or categories:
         goods = GoodsModel.filter(text=text_filter, brand=brands if brands else None,
                                   category=categories if categories else None)

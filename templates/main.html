@@ -18,21 +18,27 @@
         <br>
         <b>Категории</b>
         <br>
-        {% for item in categories %}
+        {% for item in categories if item != 'null_category' %}
             <label>{{ item }}
                 <input type="checkbox" name="{{ item }}" value="{{ item }}">
             </label>
             <br>
         {% endfor %}
+            <label>Нет категории
+            <input type="checkbox" name="null_category" value="null_category">
+            </label>
         <br>
         <b>Бренды</b>
-        {% for item in brands %}
+        {% for item in brands if item != 'null_brand' %}
             <label>
                 {{ item }}
             <input type="checkbox" name="{{ item }}" value="{{ item }}">
             </label>
             <br>
         {% endfor %}
+        <label>Нет бренда
+            <input type="checkbox" name="null_brand" value="null_brand">
+        </label>
         <button>Найти!</button>
     </form>
     {% for product in goods %}
