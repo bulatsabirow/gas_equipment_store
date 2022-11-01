@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block body %}
+    <h1>Избранное</h1>
+    {% for item in wishlist %}
+        <p>{{ item.title }}</p>
+    {% endfor %}
+{% endblock %}

@@ -94,9 +94,10 @@ def product(id):
         session['cart'][value['id']] = session['cart'].get(value['id'], 0) + \
                                        int(request.form.get('count', 0))
         return redirect(url_for('cart'))
-
+    in_wishlist = value['id'] in session.get('wishlist', {})
     return render_template('product.html', **{
         'product': GoodsModel.select(id),
+        'in_wishlist': in_wishlist,
     })
 
 
@@ -108,6 +109,31 @@ def cart():
         'cart': goods,
         'total_amount': total_amount,
     })
+
+
+@app.route('/wishlist')
+def wishlist_view():
+    wishlist = GoodsModel.find_all(session['wishlist'])
+    return render_template('wishlist.html', **{
+        'wishlist': wishlist,
+    })
+
+
+@app.route('/add_to_wishlist/<int:id>', methods=['GET', 'POST'])
+def add_to_wishlist(id):
+    print(session.get('wishlist', None))
+    if request.method == 'POST':
+        session.modified = True
+        value = GoodsModel.select(id).to_json()
+        if session.get('wishlist', None) is None:
+            session['wishlist'] = {}
+        in_wishlist = value['id'] in session['wishlist']
+        if not in_wishlist:
+            session['wishlist'][value['id']] = True
+        else:
+            session['wishlist'].pop(value['id'])
+        return {'in_wishlist': in_wishlist}
+    return ''
 
 
 if __name__ == "__main__":
