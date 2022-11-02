@@ -80,7 +80,7 @@ class GoodsInterface(BaseInterface, ABC):
             text = ''
         if brand is None:
             brand = ' (brand IS NOT NULL OR brand IS NULL)'
-        elif brand == ['null_brand']:
+        elif brand == {'null_brand'}:
             brand = ' (brand IS NULL) '
         else:
             additional = ''
@@ -90,7 +90,7 @@ class GoodsInterface(BaseInterface, ABC):
                     + additional + ')'
         if category is None:
             category = ' (category IS NOT NULL OR category IS NULL)'
-        elif category == ['null_category']:
+        elif category == {'null_category'}:
             category = ' (category IS NULL) '
         else:
             additional = ''
@@ -166,10 +166,6 @@ class GoodsModel(BaseObjectModel, GoodsInterface):
         for item in self.__dict__.items():
             if item[0] != 'count':
                 yield item[1]
-
-    @staticmethod
-    def f():
-        return BaseInterface.select(f'SELECT enum_range(NULL::category_choices);')
 
 
 

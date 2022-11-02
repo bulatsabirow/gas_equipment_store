@@ -15,13 +15,15 @@
     <a href="{{ url_for('cart') }}">Моя корзина</a>
     <a href="{{ url_for('wishlist_view') }}">Избранное</a>
     <form method="get">
-        <input type="text" name="text_filter" placeholder="Введите имя или описание товара...">
+        <input type="text" name="text_filter" placeholder="Введите имя или описание товара..."
+               value="{{ search|default('', true) }}">
         <br>
         <b>Категории</b>
         <br>
         {% for item in categories if item != 'null_category' %}
             <label>{{ item }}
-                <input type="checkbox" name="{{ item }}" value="{{ item }}">
+                <input type="checkbox" name="{{ item }}" value="{{ item }}"
+                        {% if item in chosen_categories %}checked{% endif %}>
             </label>
             <br>
         {% endfor %}
@@ -34,7 +36,8 @@
         {% for item in brands if item != 'null_brand' %}
             <label>
                 {{ item }}
-            <input type="checkbox" name="{{ item }}" value="{{ item }}">
+            <input type="checkbox" name="{{ item }}" value="{{ item }}"
+                   {% if item in chosen_brands %}checked{% endif %}>
             </label>
             <br>
         {% endfor %}
@@ -43,9 +46,14 @@
         </label>
         <button>Найти!</button>
     </form>
+    <button id="reset-btn">Сбросить все фильтры</button>
     {% for product in goods %}
         <p><a href="{{ url_for('product', id=product.id) }}">{{ product.title }}</a></p>
         <p>{{ product.description[:15] }}...</p>
         <p>{{ product.price }}</p>
     {% endfor %}
+    <script>
+        let resetButton = document.getElementById('reset-btn');
+        resetButton.onclick = () => document.location.href = "{{ url_for('goods_list') }}";
+    </script>
 {% endblock %}

@@ -23,13 +23,13 @@ def load_user(email):
 @app.route('/goods')
 def goods_list():
     text_filter = request.args.get('text_filter', None)
-    brands = []
-    categories = []
+    brands = set()
+    categories = set()
     for param in request.args:
         if param in BRAND_CHOICES:
-            brands.append(request.args.get(param))
+            brands.add(request.args.get(param))
         if param in CATEGORY_CHOICES:
-            categories.append(request.args.get(param))
+            categories.add(request.args.get(param))
     print(text_filter, brands, categories)
     if text_filter or brands or categories:
         goods = GoodsModel.filter(text=text_filter, brand=brands if brands else None,
@@ -41,6 +41,9 @@ def goods_list():
         'goods': goods,
         'categories': CATEGORY_CHOICES,
         'brands': BRAND_CHOICES,
+        'chosen_categories': categories,
+        'chosen_brands': brands,
+        'search': text_filter,
     })
 
 

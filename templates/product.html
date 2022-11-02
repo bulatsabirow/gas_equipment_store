@@ -18,10 +18,10 @@
     <script>
         $('#wishlist-btn').on('click', function() {
         if(document.querySelector('#wishlist-btn').innerText === 'Удалить из избранного'){
-            document.querySelector('#wishlist-btn').innerText = 'Добавить в избранное'
+            document.querySelector('#wishlist-btn').innerText = 'Добавить в избранное';
         }
         else {
-            document.querySelector('#wishlist-btn').innerText = 'Удалить из избранного'
+            document.querySelector('#wishlist-btn').innerText = 'Удалить из избранного';
         }
         $.ajax({
             url: '{{ url_for("add_to_wishlist",id=product.id) }}',
