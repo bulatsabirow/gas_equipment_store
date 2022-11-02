@@ -2,6 +2,6 @@
 {% block body %}
     <h1>Избранное</h1>
     {% for item in wishlist %}
-        <p>{{ item.title }}</p>
+        <a href="/product/{{ item.id }}">{{ item.title }}</a>
     {% endfor %}
 {% endblock %}
