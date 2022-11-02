@@ -11,6 +11,9 @@
         <a href="{{ url_for('auth') }}">Войти</a>
     {% else %}
         <a href="{{ url_for('logout') }}">Выйти</a>
+        {% if current_user.is_admin %}
+            <a href="{{ url_for('add_product_view') }}">Добавить новый товар</a>
+        {% endif %}
     {% endif %}
     <a href="{{ url_for('cart') }}">Моя корзина</a>
     <a href="{{ url_for('wishlist_view') }}">Избранное</a>
@@ -28,7 +31,8 @@
             <br>
         {% endfor %}
             <label>Нет категории
-            <input type="checkbox" name="null_category" value="null_category">
+            <input type="checkbox" name="null_category" value="null_category"
+                {% if 'null_category' in chosen_categories %}checked{% endif %}>
             </label>
         <br>
         <b>Бренды</b>
@@ -42,7 +46,8 @@
             <br>
         {% endfor %}
         <label>Нет бренда
-            <input type="checkbox" name="null_brand" value="null_brand">
+            <input type="checkbox" name="null_brand" value="null_brand"
+             {% if "null_brand" in chosen_brands %}checked{% endif %}>
         </label>
         <button>Найти!</button>
     </form>

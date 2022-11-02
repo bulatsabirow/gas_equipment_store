@@ -1,16 +1,19 @@
+import os
 from datetime import timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, session
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 from ORM import *
-from forms import RegisterForm, AuthForm
+from forms import RegisterForm, AuthForm, ProductForm
 from login import *
 
 app = Flask(__name__)
 app.secret_key = '12345'
 app.config['SECRET_KEY'] = '12345'
+app.config['UPLOAD_FOLDER'] = '/Users/bulat/PycharmProjects/gas_equipment_store/static/img'
 app.permanent_session_lifetime = timedelta(days=365)
 login_manager.init_app(app)
 
@@ -139,6 +142,31 @@ def add_to_wishlist(id):
             session['wishlist'].pop(value['id'])
         return {'in_wishlist': in_wishlist}
     return ''
+
+# @login_required
+
+
+@app.route('/add_product', methods=['GET', 'POST'])
+def add_product_view():
+    form = ProductForm()
+    if form.validate_on_submit():
+        title = form.title.data
+        description = form.description.data
+        price = float(form.price.data)
+        category = form.category.data if form.category.data != 'null_category' else None
+        brand = form.brand.data if form.brand.data != 'null_brand' else None
+        image = request.files['file']
+        count = int(form.count.data)
+        if image is None:
+            pass
+        else:
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                                              secure_filename(image.filename)))
+        GoodsModel(title=title, description=description, price=price,
+                   category=category, image=image.filename, count=count, brand=brand, id='').insert()
+    return render_template('add_product.html', **{
+        'form': form,
+    })
 
 
 if __name__ == "__main__":

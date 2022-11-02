@@ -45,12 +45,12 @@ class UserInterface(BaseInterface):
 
 class GoodsInterface(BaseInterface, ABC):
     def insert(self):
-        category = 'null' if self.category is None else f'{self.category}'
-        brand = 'null' if self.brand is None else f'{self.brand}'
+        category = 'null' if self.category is None else f'\'{self.category}\''
+        brand = 'null' if self.brand is None else f'\'{self.brand}\''
         return super(GoodsInterface, self).insert(f'INSERT INTO goods(title, description, price, image,'
                                                   f' category, brand, count) VALUES (\'{self.title}\','
                                                   f'\'{self.description}\',{self.price},\'{self.image}\','
-                                                  f' {category}, {brand}, {self.count};')
+                                                  f' {category}, {brand}, {self.count});')
 
     @staticmethod
     def select(goods_id):
@@ -152,7 +152,7 @@ class UserModel(BaseObjectModel, UserMixin, UserInterface):
 
 
 class GoodsModel(BaseObjectModel, GoodsInterface):
-    def __init__(self, id, title, description, price, image, category=None, brand=None, count=0):
+    def __init__(self, id, title, description, price, image,category=None, brand=None, count=0):
         self.id = str(id)
         self.title = title
         self.description = description

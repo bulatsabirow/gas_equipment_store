@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% block body %}
     <h1>Избранное</h1>
+    {% if wishlist %}
     {% for item in wishlist %}
-        <a href="/product/{{ item.id }}">{{ item.title }}</a>
+        <a href="{{ url_for('product',id=item.id) }}">{{ item.title }}</a>
     {% endfor %}
+    {% else %}
+        <p><b>У вас пока нет товаров в избранном!</b></p>
+    {% endif %}
 {% endblock %}

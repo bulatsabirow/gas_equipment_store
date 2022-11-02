@@ -1,6 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, \
+    FloatField, SelectField, FileField, IntegerField, DecimalField, Form
 from wtforms.validators import DataRequired, Email
+
+from ORM import CATEGORY_CHOICES, BRAND_CHOICES
 
 
 class AuthForm(FlaskForm):
@@ -12,3 +15,15 @@ class AuthForm(FlaskForm):
 class RegisterForm(AuthForm):
     name = StringField("Имя ", validators=[DataRequired()])
     submit = SubmitField(label='Зарегистрироваться')
+
+
+class ProductForm(FlaskForm):
+    title = StringField("Название товара", validators=[DataRequired()])
+    description = TextAreaField('Описание товара', validators=[DataRequired()])
+    price = DecimalField('Цена', validators=[DataRequired()])
+    category = SelectField('Категория', choices=[item for item in CATEGORY_CHOICES])
+    brand = SelectField('Бренд', choices=[item for item in BRAND_CHOICES])
+    image = FileField('Фотография', name='file')
+    count = IntegerField('Количество')
+    submit = SubmitField(label='Добавить товар')
+
