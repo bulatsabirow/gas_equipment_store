@@ -62,7 +62,8 @@ def registration():
         user.insert()
         login_user(user)
         print(current_user.is_authenticated)
-
+        if 'next' in request.args:
+            return redirect(request.args.get('next'))
     return render_template('register.html', form=form)
 
 
@@ -87,7 +88,7 @@ def auth():
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect('goods')
+    return redirect(url_for('goods_list'))
 
 
 @app.route('/product/<int:id>', methods=['POST', 'GET'])
@@ -143,10 +144,9 @@ def add_to_wishlist(id):
         return {'in_wishlist': in_wishlist}
     return ''
 
-# @login_required
-
 
 @app.route('/add_product', methods=['GET', 'POST'])
+@login_required
 def add_product_view():
     form = ProductForm()
     if form.validate_on_submit():

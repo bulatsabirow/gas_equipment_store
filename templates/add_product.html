@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block body %}
     <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
+    {% if current_user.is_admin %}
     <form method="post" enctype="multipart/form-data">
         {{ form.csrf_token() }}
         {% for field in form if field.name != 'csrf_token' %}
@@ -17,4 +18,7 @@
             </p>
         {% endfor %}
     </form>
+    {% else %}
+        <p><b>Это служебная страница. Если вы не сотрудник магазина, пожалуйста, покиньте её.</b></p>
+    {% endif %}
 {% endblock %}
