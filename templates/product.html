@@ -1,16 +1,8 @@
 {% extends  'base.html' %}
 {% block body %}
-    <style>
-        .add::before {
-            content: 'Добавить в избранное';
-        }
-        .delete::before {
-            content: 'Удалить из избранного';
-        }
-    </style>
     <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
     <button id="wishlist-btn">
-        <span class={% if in_wishlist %}{{ "delete" }}{% else %}{{ "add" }}{% endif %}></span>
+         {% if in_wishlist %}Удалить из избранного{% else %}Добавить в избранное{% endif %}
     </button>
     {% for attr in product %}
         <p>{{ attr }}</p>
@@ -25,14 +17,12 @@
     <script src="{{ url_for('static', filename='js/product.js') }}"></script>
     <script>
         $('#wishlist-btn').on('click', function() {
-            if(document.querySelector('span').classList.contains('add')){
-                document.querySelector('span').classList.remove('add');
-                document.querySelector('span').classList.add('delete');
-            }
-            else {
-                document.querySelector('span').classList.remove('delete');
-                document.querySelector('span').classList.add('add');
-            }
+        if(document.querySelector('#wishlist-btn').innerText === 'Удалить из избранного'){
+            document.querySelector('#wishlist-btn').innerText = 'Добавить в избранное'
+        }
+        else {
+            document.querySelector('#wishlist-btn').innerText = 'Удалить из избранного'
+        }
         $.ajax({
             url: '{{ url_for("add_to_wishlist",id=product.id) }}',
             method: 'post',

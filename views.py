@@ -113,7 +113,9 @@ def cart():
 
 @app.route('/wishlist')
 def wishlist_view():
-    wishlist = GoodsModel.find_all(session['wishlist'])
+    wishlist = GoodsModel.find_all(session.get('wishlist', None))
+    if wishlist is None:
+        wishlist = {}
     return render_template('wishlist.html', **{
         'wishlist': wishlist,
     })
