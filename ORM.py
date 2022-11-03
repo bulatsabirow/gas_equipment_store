@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Iterator
+from typing import Iterator, Optional
 
 CATEGORY_CHOICES = {'gas stoves', 'geysers', 'gas meter', 'kitchen hoods', 'null_category'}
 BRAND_CHOICES = {'Atlan', 'Graude', 'De Luxe', 'Gefest', 'Oasis', 'Beko', 'null_brand'}
@@ -67,7 +67,9 @@ class GoodsInterface(BaseInterface, ABC):
         return x
 
     @staticmethod
-    def find_all(goods_id: Iterator):
+    def find_all(goods_id: Optional[Iterator]):
+        if goods_id is None:
+            return
         return [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
                                                                    f' category, brand, count'
                                                                    f' FROM goods WHERE id'

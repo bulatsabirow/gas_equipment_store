@@ -61,9 +61,6 @@ def registration():
         user = UserModel(name, email, password, is_admin)
         user.insert()
         login_user(user)
-        print(current_user.is_authenticated)
-        if 'next' in request.args:
-            return redirect(request.args.get('next'))
     return render_template('register.html', form=form)
 
 
@@ -77,8 +74,11 @@ def auth():
         user = UserModel.find_user(email)
         if user is not None and check_password_hash(user.password, password):
             login_user(user)
+            print(current_user.is_authenticated)
         else:
             message = 'Неправильные адрес электронной почты или пароль'
+        if 'next' in request.args:
+            return redirect(request.args.get('next'))
     return render_template('auth.html', **{
         'message': message,
         'form': form,
@@ -121,8 +121,6 @@ def cart():
 @app.route('/wishlist')
 def wishlist_view():
     wishlist = GoodsModel.find_all(session.get('wishlist', None))
-    if wishlist is None:
-        wishlist = {}
     return render_template('wishlist.html', **{
         'wishlist': wishlist,
     })
