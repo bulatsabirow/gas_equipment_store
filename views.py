@@ -110,8 +110,10 @@ def product(id):
 
 @app.route('/cart')
 def cart():
-    goods = GoodsModel.find_all(session['cart'])
-    total_amount = sum((item.price * session['cart'][item.id] for item in goods))
+    goods = GoodsModel.find_all(session.get('cart', None))
+    total_amount = None
+    if goods:
+        total_amount = sum((item.price * session['cart'][item.id] for item in goods))
     return render_template('cart.html', **{
         'cart': goods,
         'total_amount': total_amount,

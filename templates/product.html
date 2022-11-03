@@ -6,7 +6,7 @@
     </button>
     {% for attr in product %}
         {% if attr == 'image' %}
-            <p><img alt="" src="../static/img/{{ product[attr] }}"></p>
+            <p><img alt="<Фото не найдено>" src="../static/img/{{ product[attr] }}"></p>
         {% else %}
             <p>{{ product[attr] }}</p>
         {% endif %}
