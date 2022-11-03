@@ -103,7 +103,7 @@ def product(id):
         return redirect(url_for('cart'))
     in_wishlist = value['id'] in session.get('wishlist', {})
     return render_template('product.html', **{
-        'product': GoodsModel.select(id),
+        'product': GoodsModel.select(id).to_json(),
         'in_wishlist': in_wishlist,
     })
 

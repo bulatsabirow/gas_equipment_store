@@ -5,7 +5,11 @@
          {% if in_wishlist %}Удалить из избранного{% else %}Добавить в избранное{% endif %}
     </button>
     {% for attr in product %}
-        <p>{{ attr }}</p>
+        {% if attr == 'image' %}
+            <p><img alt="" src="../static/img/{{ product[attr] }}"></p>
+        {% else %}
+            <p>{{ product[attr] }}</p>
+        {% endif %}
     {% endfor %}
     <form method="post">
         <label>
