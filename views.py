@@ -255,10 +255,11 @@ def edit_product_view(id):
                     else:
                         diff[attr] = form.data[attr]
 
-            # image = request.files['file']
-            # if image.filename:
-            #     image.save(os.path.join(app.config['UPLOAD_FOLDER'],
-            #                secure_filename(image.filename)))
+            image = request.files['file']
+            if image.filename:
+                image.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                           secure_filename(image.filename)))
+                diff['image'] = image.filename
             unit.update(**diff)
 
         return render_template('edit_product.html', **{
