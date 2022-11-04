@@ -25,7 +25,7 @@ class ProductForm(FlaskForm):
     category = SelectField('Категория', choices=[item for item in CATEGORY_CHOICES])
     brand = SelectField('Бренд', choices=[item for item in BRAND_CHOICES])
     image = FileField('Фотография', name='file')
-    count = IntegerField('Количество')
+    count = IntegerField('Количество', render_kw={'min': 1})
 
 
 class AddProductForm(ProductForm):
