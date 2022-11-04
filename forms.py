@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, \
-    FloatField, SelectField, FileField, IntegerField, DecimalField, Form
+    SelectField, FileField, IntegerField, DecimalField
 from wtforms.validators import DataRequired, Email
+
 
 from ORM import CATEGORY_CHOICES, BRAND_CHOICES
 
@@ -25,5 +26,12 @@ class ProductForm(FlaskForm):
     brand = SelectField('Бренд', choices=[item for item in BRAND_CHOICES])
     image = FileField('Фотография', name='file')
     count = IntegerField('Количество')
+
+
+class AddProductForm(ProductForm):
     submit = SubmitField(label='Добавить товар')
+
+
+class EditProductForm(ProductForm):
+    submit = SubmitField(label='Изменить товар')
 

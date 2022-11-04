@@ -4,11 +4,12 @@ from typing import Callable
 
 from flask import Flask, render_template, request, redirect, url_for, session, abort
 from flask_login import current_user, login_user, logout_user, login_required, AnonymousUserMixin
+from werkzeug.datastructures import FileStorage
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 from ORM import *
-from forms import RegisterForm, AuthForm, ProductForm
+from forms import RegisterForm, AuthForm, AddProductForm, EditProductForm
 from login import *
 
 app = Flask(__name__)
@@ -163,8 +164,8 @@ def admin_required(func: Callable) -> Callable:
 
 @app.route('/admin/add_product', methods=['GET', 'POST'])
 def add_product_view():
-    if type(current_user) != AnonymousUserMixin  and current_user.is_admin:
-        form = ProductForm()
+    if type(current_user) != AnonymousUserMixin and current_user.is_admin:
+        form = AddProductForm()
         if form.validate_on_submit():
             title = form.title.data
             description = form.description.data
@@ -173,13 +174,17 @@ def add_product_view():
             brand = form.brand.data if form.brand.data != 'null_brand' else None
             image = request.files['file']
             count = int(form.count.data)
+            print(request.files['file'])
+            print('image:', image)
+            print('image.filename', image.filename)
             if image.filename:
                 image.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                                   secure_filename(image.filename)))
             GoodsModel(title=title, description=description, price=price,
                        category=category, image=image.filename if image.filename else None, count=count, brand=brand, id='').insert()
-        return render_template('add_product.html', **{
+        return render_template('edit_product.html', **{
             'form': form,
+            'is_add': True,
         })
     else:
         abort(404)
@@ -217,6 +222,51 @@ def delete_product(id):
         unit.remove()
         return {}
     abort(404)
+
+
+@app.route('/admin/edit_product/<int:id>', methods=['GET', 'POST'])
+def edit_product_view(id):
+    if type(current_user) != AnonymousUserMixin and current_user.is_admin:
+        unit = GoodsModel.select(id)
+        json_unit = unit.to_json()
+        diff = {}
+        if unit is None:
+            abort(404)
+        form = EditProductForm(title=unit.title,
+                               description=unit.description,
+                               price=unit.price,
+                               category=unit.category,
+                               brand=unit.brand,
+                               count=unit.count)
+        print(form.errors)
+        print(form.data)
+        print(form.validate_on_submit())
+        if form.validate_on_submit():
+            # title = form.title.data
+            # description = form.description.data
+            # price = float(form.price.data)
+            # category = form.category.data if form.category.data != 'null_category' else None
+            # brand = form.brand.data if form.brand.data != 'null_brand' else None
+            # count = int(form.count.data)
+            for attr in form.data:
+                if attr in json_unit and form.data[attr] != json_unit[attr]:
+                    if attr == 'image' and not form.data[attr].filename:
+                        pass
+                    else:
+                        diff[attr] = form.data[attr]
+
+            # image = request.files['file']
+            # if image.filename:
+            #     image.save(os.path.join(app.config['UPLOAD_FOLDER'],
+            #                secure_filename(image.filename)))
+            unit.update(**diff)
+
+        return render_template('edit_product.html', **{
+            'form': form,
+            'is_add': False,
+        })
+    else:
+        abort(404)
 
 
 if __name__ == "__main__":

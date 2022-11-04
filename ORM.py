@@ -28,6 +28,8 @@ class BaseInterface:
 
     delete = insert
 
+    update = insert
+
 
 class UserInterface(BaseInterface):
     def insert(self):
@@ -49,7 +51,7 @@ class GoodsInterface(BaseInterface, ABC):
     def insert(self):
         category = 'null' if self.category is None else f'\'{self.category}\''
         brand = 'null' if self.brand is None else f'\'{self.brand}\''
-        image = 'null' if self.image is None else f'\'{self.brand}\''
+        image = 'null' if self.image is None else f'\'{self.image}\''
         return super(GoodsInterface, self).insert(f'INSERT INTO goods(title, description, price, image,'
                                                   f' category, brand, count) VALUES (\'{self.title}\','
                                                   f'\'{self.description}\',{self.price},{image},'
@@ -57,9 +59,13 @@ class GoodsInterface(BaseInterface, ABC):
 
     @staticmethod
     def select(goods_id):
-        response = BaseInterface.select(f'SELECT id, title, description, price, image, category, brand, count'
+        try:
+            response = BaseInterface.select(f'SELECT id, title, description, price, image, category, brand, count'
                                         f' FROM goods WHERE id = {goods_id};')[0]
-        return GoodsModel(*response)
+        except IndexError:
+            return
+        else:
+            return GoodsModel(*response)
 
     @staticmethod
     def all():
@@ -121,8 +127,17 @@ class GoodsInterface(BaseInterface, ABC):
                                                                    f' {brand} AND {category};')]
 
     @staticmethod
-    def filter_by_brand(brand: str):
-        pass
+    def stringify(value=''):
+        if type(value) == str:
+            return f'\'{value}\''
+        return value
+
+    def update(self, **kwargs):
+        if not kwargs:
+            return
+        kwargs = [f'{key}={self.stringify(kwargs[key])}' for key in kwargs]
+        print(f'UPDATE goods SET {", ".join(kwargs)} WHERE id = {self.id};')
+        return BaseInterface.update(f'UPDATE goods SET {", ".join(kwargs)} WHERE id = {self.id};')
 
     def remove(self):
         return BaseInterface.delete(f'DELETE FROM goods WHERE id = {self.id};')
