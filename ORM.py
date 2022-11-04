@@ -26,6 +26,8 @@ class BaseInterface:
         CURSOR.execute(query)
         CON.commit()
 
+    delete = insert
+
 
 class UserInterface(BaseInterface):
     def insert(self):
@@ -47,9 +49,10 @@ class GoodsInterface(BaseInterface, ABC):
     def insert(self):
         category = 'null' if self.category is None else f'\'{self.category}\''
         brand = 'null' if self.brand is None else f'\'{self.brand}\''
+        image = 'null' if self.image is None else f'\'{self.brand}\''
         return super(GoodsInterface, self).insert(f'INSERT INTO goods(title, description, price, image,'
                                                   f' category, brand, count) VALUES (\'{self.title}\','
-                                                  f'\'{self.description}\',{self.price},\'{self.image}\','
+                                                  f'\'{self.description}\',{self.price},{image},'
                                                   f' {category}, {brand}, {self.count});')
 
     @staticmethod
@@ -68,7 +71,7 @@ class GoodsInterface(BaseInterface, ABC):
 
     @staticmethod
     def find_all(goods_id: Optional[Iterator]):
-        if goods_id is None:
+        if not goods_id:
             return
         return [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
                                                                    f' category, brand, count'
@@ -120,6 +123,9 @@ class GoodsInterface(BaseInterface, ABC):
     @staticmethod
     def filter_by_brand(brand: str):
         pass
+
+    def remove(self):
+        return BaseInterface.delete(f'DELETE FROM goods WHERE id = {self.id};')
 
 
 class BaseObjectModel:

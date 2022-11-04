@@ -10,10 +10,11 @@
         <a href="{{  url_for('registration') }}">Зарегистрироваться</a>
         <a href="{{ url_for('auth') }}">Войти</a>
     {% else %}
-        <a href="{{ url_for('logout') }}">Выйти</a>
         {% if current_user.is_admin %}
-            <a href="{{ url_for('add_product_view') }}">Добавить новый товар</a>
+            <a href="/admin">Войти в панель администрирования</a>
+            <br>
         {% endif %}
+        <a href="{{ url_for('logout_view') }}">Выйти</a>
     {% endif %}
     <a href="{{ url_for('cart') }}">Моя корзина</a>
     <a href="{{ url_for('wishlist_view') }}">Избранное</a>

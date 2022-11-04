@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block body %}
+     <h1>Администрирование магазина</h1>
+    <a href="{{ url_for('add_product_view') }}">Добавить новый товар</a>
+    {% for item in products %}
+        <div class="card{{ item.id }}">
+        <p>{{ item.title }}</p>
+        <p>{{ item.id }}</p>
+        <p>{{ item.price }}</p>
+        <button id="delete-btn{{ item.id }}">
+            Удалить товар
+            </button>
+        <script>
+            $('#delete-btn{{ item.id }}').on('click', function () {
+                $.ajax({
+                    url: "{{ url_for('delete_product',id=item.id) }}",
+                    method: 'post'
+                });
+                document.querySelector('.card{{ item.id }}').remove();
+            })
+        </script>
+        </div>
+    {% endfor %}
+{% endblock %}

@@ -1,8 +1,9 @@
 import os
 from datetime import timedelta
+from typing import Callable
 
-from flask import Flask, render_template, request, redirect, url_for, session
-from flask_login import current_user, login_user, logout_user, login_required
+from flask import Flask, render_template, request, redirect, url_for, session, abort
+from flask_login import current_user, login_user, logout_user, login_required, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -18,8 +19,17 @@ app.permanent_session_lifetime = timedelta(days=365)
 login_manager.init_app(app)
 
 
+def raw_page_not_found():
+    return render_template('error.html')
+
+
+@app.errorhandler(404)
+def page_not_found(exception):
+    return raw_page_not_found()
+
+
 @login_manager.user_loader
-def load_user(email):
+def load_user(email: str):
     return UserModel.select(email)
 
 
@@ -86,7 +96,7 @@ def auth():
 
 
 @app.route('/logout')
-def logout():
+def logout_view():
     logout_user()
     return redirect(url_for('goods_list'))
 
@@ -142,32 +152,74 @@ def add_to_wishlist(id):
         else:
             session['wishlist'].pop(value['id'])
         return {'in_wishlist': in_wishlist}
-    return ''
+    abort(404)
 
 
-@app.route('/add_product', methods=['GET', 'POST'])
-@login_required
+def admin_required(func: Callable) -> Callable:
+    if type(current_user) == AnonymousUserMixin  and current_user.is_admin:
+        return func
+    return raw_page_not_found
+
+
+@app.route('/admin/add_product', methods=['GET', 'POST'])
 def add_product_view():
-    form = ProductForm()
-    if form.validate_on_submit():
-        title = form.title.data
-        description = form.description.data
-        price = float(form.price.data)
-        category = form.category.data if form.category.data != 'null_category' else None
-        brand = form.brand.data if form.brand.data != 'null_brand' else None
-        image = request.files['file']
-        count = int(form.count.data)
-        if image is None:
-            pass
-        else:
-            image.save(os.path.join(app.config['UPLOAD_FOLDER'],
-                                              secure_filename(image.filename)))
-        GoodsModel(title=title, description=description, price=price,
-                   category=category, image=image.filename, count=count, brand=brand, id='').insert()
-    return render_template('add_product.html', **{
-        'form': form,
-    })
+    if type(current_user) != AnonymousUserMixin  and current_user.is_admin:
+        form = ProductForm()
+        if form.validate_on_submit():
+            title = form.title.data
+            description = form.description.data
+            price = float(form.price.data)
+            category = form.category.data if form.category.data != 'null_category' else None
+            brand = form.brand.data if form.brand.data != 'null_brand' else None
+            image = request.files['file']
+            count = int(form.count.data)
+            if image.filename:
+                image.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                                                  secure_filename(image.filename)))
+            GoodsModel(title=title, description=description, price=price,
+                       category=category, image=image.filename if image.filename else None, count=count, brand=brand, id='').insert()
+        return render_template('add_product.html', **{
+            'form': form,
+        })
+    else:
+        abort(404)
+
+
+@app.route('/admin')
+def admin_view():
+    print('curr:', current_user)
+    print(session.get('cart', None))
+    if type(current_user) != AnonymousUserMixin and current_user.is_admin:
+        return render_template('admin.html', **{
+            'products': GoodsModel.all(),
+        })
+    else:
+        abort(404)
+
+
+@app.route('/admin/delete_product')
+def delete_product_view():
+    if type(current_user) != AnonymousUserMixin and current_user.is_admin:
+        return render_template('delete_product.html')
+    else:
+        abort(404)
+
+
+@app.route('/delete_product_service/<int:id>', methods=['GET', 'POST'])
+def delete_product(id):
+    unit = GoodsModel.select(id)
+    if request.method == 'POST':
+        session.modified = True
+        print(session.get('cart', None))
+        print('cond:', 'cart' in session and str(unit.id) in session['cart'])
+        if 'cart' in session and str(unit.id) in session['cart']:
+            session['cart'].pop(str(unit.id))
+        unit.remove()
+        return {}
+    abort(404)
 
 
 if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+    app.run(port=7000, debug=True)
+
+
