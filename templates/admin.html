@@ -10,6 +10,9 @@
         <button id="delete-btn{{ item.id }}">
             Удалить товар
             </button>
+        <button onclick="document.location.href = '{{ url_for('edit_product_view',id=item.id) }}'">
+            Изменить товар
+        </button>
         <script>
             $('#delete-btn{{ item.id }}').on('click', function () {
                 $.ajax({
