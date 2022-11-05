@@ -3,11 +3,56 @@
     <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
     {% if cart %}
         {% for item in cart %}
-            <p>{{ item }}</p>
-            <p>Количество товаров: {{ session['cart'][item.id] }}</p>
-            <p>Стоимость: {{ session['cart'][item.id] * item.price }}</p>
+            <div class="card{{ item.id }}">
+                <p>{{ item }}</p>
+                <p>
+                <form method="post">
+                    <input name="count" id="count-input{{ item.id }}" type="number" min="1" value="{{ session['cart'][item.id] }}"
+                           style="width: 50px">
+                </form>
+                </p>
+                <p id="product{{ item.id }}-price">Стоимость: {{ (session['cart'][item.id] * item.price)|round(2) }}</p>
+                <button id="delete{{ item.id }}">Удалить из корзины</button>
+                <script>
+                    $('#delete{{ item.id }}').on('click', function (){
+                        $.ajax({
+                            url: "{{ url_for('remove_from_cart',id=item.id) }}",
+                            method: 'post',
+                            dataType: 'html',
+                            success: function (data) {
+                                alert(data);
+                                data = JSON.parse(data);
+                                alert(data['price']);
+                                alert(data['count']);
+                                document.querySelector('#total_price').innerText = 'Всего: ' +
+                                    `${+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] - (+data['count']) * (+data['price'])}`
+                            }
+                        })
+                        document.querySelector('.card{{ item.id }}').remove();
+                    })
+                    $("#count-input{{ item.id }}").bind('mouseup keyup', function () {
+                        $.ajax({
+                            url: "{{ url_for('change_product_count',id=item.id) }}",
+                            method: 'post',
+                            data: {'count': +$("#count-input{{ item.id }}").val()},
+                            dataType: 'html',
+                            success: function (data) {
+                                {#alert('s');#}
+                                {#alert(data);#}
+                                data = JSON.parse(data);
+                                {#alert('doc:'+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]);#}
+                                {#alert('val:' + +$("#count-input{{ item.id }}").val());#}
+                                {#alert(data['prev']);#}
+                                {#alert(data['up']);#}
+                                let res = `Всего: ${(+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + (+$("#count-input{{ item.id }}").val() - data['prev']) * {{ item.price }}).toFixed(2)}`;
+                                document.querySelector('#total_price').innerText = res;
+                                }
+                            }
+                        )})
+                </script>
+            </div>
         {% endfor %}
-        <p><b>Всего: {{ total_amount }}</b></p>
+        <p><b id="total_price">Всего: {{ total_amount|round(2) }}</b></p>
     {% else %}
         <p><b>В вашей корзине нет товаров...</b></p>
     {% endif %}

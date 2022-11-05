@@ -106,12 +106,12 @@ def logout_view():
 def product(id):
     session.modified = True
     value = GoodsModel.select(id).to_json()
-    if request.method == 'POST':
-        if session.get('cart', None) is None:
-            session['cart'] = {}
-        session['cart'][value['id']] = session['cart'].get(value['id'], 0) + \
-                                       int(request.form.get('count', 0))
-        return redirect(url_for('cart'))
+    # if request.method == 'POST':
+    #     if session.get('cart', None) is None:
+    #         session['cart'] = {}
+    #     session['cart'][value['id']] = session['cart'].get(value['id'], 0) + \
+    #                                    1
+    #     return redirect(url_for('cart'))
     in_wishlist = value['id'] in session.get('wishlist', {})
     return render_template('product.html', **{
         'product': GoodsModel.select(id).to_json(),
@@ -194,7 +194,7 @@ def add_product_view():
 def admin_view():
     print('curr:', current_user)
     print(session.get('cart', None))
-    if type(current_user) != AnonymousUserMixin and current_user.is_admin:
+    if getattr(current_user, 'is_admin', None):
         return render_template('admin.html', **{
             'products': GoodsModel.all(),
         })
@@ -204,7 +204,7 @@ def admin_view():
 
 @app.route('/admin/delete_product')
 def delete_product_view():
-    if type(current_user) != AnonymousUserMixin and current_user.is_admin:
+    if getattr(current_user, 'is_admin', None):
         return render_template('delete_product.html')
     else:
         abort(404)
@@ -226,7 +226,7 @@ def delete_product(id):
 
 @app.route('/admin/edit_product/<int:id>', methods=['GET', 'POST'])
 def edit_product_view(id):
-    if type(current_user) != AnonymousUserMixin and current_user.is_admin:
+    if getattr(current_user, 'is_admin', None):
         unit = GoodsModel.select(id)
         json_unit = unit.to_json()
         diff = {}
@@ -270,7 +270,82 @@ def edit_product_view(id):
         abort(404)
 
 
+@app.route('/admin/append_to_cart/<int:id>')
+def append_to_cart(id):
+    if request.method == 'GET':
+        session.modified = True
+        unit = GoodsModel.select(id)
+        print(request.args)
+        print('before:', session['cart'])
+        unit.update(count=unit.count - int(request.args.get('count', 0)))
+        if session.get('cart', None) is None:
+            session['cart'] = {}
+        session['cart'][unit.id] = 1
+        print('after:', session['cart'])
+        print('cart[unit.id]:', session['cart'][unit.id])
+        return {}
+    else:
+        abort(404)
+
+
+@app.route("/remove_from_cart/<int:id>", methods=['GET', 'POST'])
+def remove_from_cart(id):
+    if request.method == 'POST':
+        unit = GoodsModel.select(id)
+        session.modified = True
+        price = unit.price
+        print('before_remove:', session['cart'])
+        count = session['cart'].pop(str(id))
+        print('after_remove:', session['cart'])
+        return {
+            'price': price,
+            'count': count,
+                }
+    abort(404)
+
+
+@app.route('/change_product_count/<int:id>', methods=['GET', 'POST'])
+def change_product_count(id):
+    if request.method == 'POST':
+        session.modified = True
+        print('before change count:', session['cart'])
+        print(int(request.form.get('count')))
+        up = session['cart'][str(id)] < int(request.form.get('count'))
+        prev = session['cart'][str(id)]
+        session['cart'][str(id)] = int(request.form.get('count'))
+        print('after change count:', session['cart'])
+        return {'up': up, 'prev': prev}
+    abort(404)
+"""
+                    {#$('#count-input{{ item.id }}').on('change', function() {#}
+                        {#document.querySelector('#total_price').innerText = `Всего: ${+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + +{{item.price}}}`;#}
+                        {#document.querySelector('#product{{ item.id }}-price').innerText =#}
+                        {#    `Стоимость: ${+document.querySelector('#product{{ item.id }}-price').innerText.match(/[\d/.]+/g)[0] + +{{ item.price }}}`#}
+                    {#    $.ajax({#}
+                    {#        url: "{{ url_for('change_product_count',id=item.id) }}",#}
+                    {#        method: 'post',#}
+                    {#        data:{'count': +$("#count-input{{ item.id }}").val()},#}
+                    {#        dataType: 'html',#}
+                    {#        success: function (data) {#}
+                    {#            alert(data);#}
+                    {#            alert(document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]);#}
+                    {#            alert(-{{item.price}});#}
+                    {#            alert(document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]-{{item.price}});#}
+                    {#            if(data['up']){#}
+                    {#                let res = document.querySelector('#product{{ item.id }}-price').innerText.match(/[\d/.]+/g)[0]-{{ item.price }};#}
+                    {#                document.querySelector('#total_price').innerText = `Всего: ${document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]-{{item.price}}}`;#}
+                    {#                document.querySelector('#product{{ item.id }}-price').innerText =#}
+                    {#                `Стоимость: ${res}`;#}
+                    {#            } else {#}
+                    {#                document.querySelector('#total_price').innerText = `Всего: ${+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + +{{item.price}}}`;#}
+                    {#                document.querySelector('#product{{ item.id }}-price').innerText =#}
+                    {#                `Стоимость: ${+document.querySelector('#product{{ item.id }}-price').innerText.match(/[\d/.]+/g)[0] + +{{ item.price }}}`;#}
+                    {#            }#}
+                    {#        }#}
+                    {#    })#}
+                    {#})#}
+
+"""
+
 if __name__ == "__main__":
     app.run(port=7000, debug=True)
-
-

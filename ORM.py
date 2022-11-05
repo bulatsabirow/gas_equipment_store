@@ -59,20 +59,26 @@ class GoodsInterface(BaseInterface, ABC):
 
     @staticmethod
     def select(goods_id):
+        print(goods_id)
         try:
             response = BaseInterface.select(f'SELECT id, title, description, price, image, category, brand, count'
-                                        f' FROM goods WHERE id = {goods_id};')[0]
+                                            f' FROM goods WHERE id = {goods_id};')[0]
         except IndexError:
             return
         else:
+            print(response)
             return GoodsModel(*response)
 
     @staticmethod
     def all():
+
         x = [GoodsModel(*item) for item in BaseInterface.select(f'SELECT id, title, description, price, image,'
                                                                 f' category, brand, count'
                                                                 f' FROM goods;')]
-        print(x)
+        print('all() query:', f'SELECT id, title, description, price, image,'
+                                                                f' category, brand, count'
+                                                                f' FROM goods;')
+        print('x=', x)
         return x
 
     @staticmethod

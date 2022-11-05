@@ -11,12 +11,18 @@
             <p>{{ product[attr] }}</p>
         {% endif %}
     {% endfor %}
-    <form method="post">
-        <label>
-            Количество товаров: <input type="number" value="1" name="count" min="1">
-        </label>
-        <button>Добавить в корзину</button>
-    </form>
+    {% if product.count > 0 %}
+        <button id="cart-btn" class="{% if not product.id in session['cart'] %}buy{% else %}redirect{% endif %}-btn">
+            {% if not product.id in session['cart'] %}
+                Добавить
+            {% else %}
+                Перейти
+            {% endif %}
+            в корзину
+        </button>
+    {% else %}
+        <p><b>Товар временно недоступен</b></p>
+    {% endif %}
     <script src="{{ url_for('static', filename='js/product.js') }}"></script>
     <script>
         $('#wishlist-btn').on('click', function() {
@@ -30,6 +36,20 @@
             url: '{{ url_for("add_to_wishlist",id=product.id) }}',
             method: 'post',
             })
+        })
+        $('#cart-btn').on('click', function (){
+            if(document.querySelector('#cart-btn').classList.contains('buy-btn')){
+                document.querySelector('#cart-btn').classList.remove('buy-btn');
+                document.querySelector('#cart-btn').classList.add('redirect-btn');
+                document.querySelector('#cart-btn').innerText = 'Перейти в корзину';
+                $.ajax({
+                    url: '{{ url_for("append_to_cart",id=product.id) }}',
+                    method: 'get',
+                })
+            }
+            else {
+                document.location.href = "{{ url_for('cart') }}";
+            }
         })
     </script>
 {% endblock %}
