@@ -5,9 +5,9 @@
         {% for item in cart %}
             <div class="card{{ item.id }}">
                 <p>{{ item }}</p>
-                <p>
+                <p style="color: green">В наличии: {{ item.count }}</p>
                 <form method="post">
-                    <input name="count" id="count-input{{ item.id }}" type="number" min="1" value="{{ session['cart'][item.id] }}"
+                    <input name="count" id="count-input{{ item.id }}" type="number" min="1" max="{{ item.count }}" value="{{ session['cart'][item.id]}}"
                            style="width: 50px">
                 </form>
                 </p>
@@ -44,8 +44,9 @@
                                 {#alert('val:' + +$("#count-input{{ item.id }}").val());#}
                                 {#alert(data['prev']);#}
                                 {#alert(data['up']);#}
-                                let res = `Всего: ${(+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + (+$("#count-input{{ item.id }}").val() - data['prev']) * {{ item.price }}).toFixed(2)}`;
+                                let res = `Всего: ${Math.round((+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + (+$("#count-input{{ item.id }}").val() - data['prev']) * {{ item.price }})*100)/100}`;
                                 document.querySelector('#total_price').innerText = res;
+                                document.querySelector('#product{{ item.id }}-price').innerText = `Стоимость: ${Math.round((+$("#count-input{{ item.id }}").val() * {{ item.price }})*100)/100}`;
                                 }
                             }
                         )})
