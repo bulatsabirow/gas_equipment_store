@@ -1,14 +1,14 @@
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 from typing import Callable
+from uuid import uuid4
 
 from flask import Flask, render_template, request, redirect, url_for, session, abort
 from flask_login import current_user, login_user, logout_user, login_required, AnonymousUserMixin
-from werkzeug.datastructures import FileStorage
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
-from ORM import *
+from ORM import GoodsModel, UserModel, OrderModel, BookingModel, CATEGORY_CHOICES, BRAND_CHOICES
 from forms import RegisterForm, AuthForm, AddProductForm, EditProductForm
 from login import *
 
@@ -270,22 +270,40 @@ def edit_product_view(id):
         abort(404)
 
 
-@app.route('/admin/append_to_cart/<int:id>')
+@app.route('/offer/')
+def offer_view():
+    return render_template('offer.html')
+
+
+@app.route('/append_offer_to_database', methods=['POST', 'GET'])
+def append_offer():
+    if request.method == 'POST':
+        identification: str = uuid4().hex
+        print('id:', identification)
+        email = current_user.email
+        BookingModel.insert(email=email, time_value=datetime.now(timezone.utc),
+                            uuid_key=identification)
+        booking = BookingModel.select(uuid_id=identification)
+        print('booking:', booking)
+        print('session[cart]', session['cart'])
+        for product_id in session['cart']:
+            OrderModel.insert(product_id, booking.id, session['cart'][product_id])
+        session['cart'].clear()
+    abort(404)
+
+
+@app.route('/append_to_cart/<int:id>', methods=["POST", "GET"])
 def append_to_cart(id):
-    if request.method == 'GET':
+    if request.method == 'POST':
         session.modified = True
         unit = GoodsModel.select(id)
-        print(request.args)
-        print('before:', session['cart'])
-        unit.update(count=unit.count - int(request.args.get('count', 0)))
+        print('before:', session.get('cart', None))
         if session.get('cart', None) is None:
             session['cart'] = {}
         session['cart'][unit.id] = 1
         print('after:', session['cart'])
         print('cart[unit.id]:', session['cart'][unit.id])
-        return {}
-    else:
-        abort(404)
+    abort(404)
 
 
 @app.route("/remove_from_cart/<int:id>", methods=['GET', 'POST'])
@@ -316,36 +334,7 @@ def change_product_count(id):
         print('after change count:', session['cart'])
         return {'up': up, 'prev': prev}
     abort(404)
-"""
-                    {#$('#count-input{{ item.id }}').on('change', function() {#}
-                        {#document.querySelector('#total_price').innerText = `Всего: ${+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + +{{item.price}}}`;#}
-                        {#document.querySelector('#product{{ item.id }}-price').innerText =#}
-                        {#    `Стоимость: ${+document.querySelector('#product{{ item.id }}-price').innerText.match(/[\d/.]+/g)[0] + +{{ item.price }}}`#}
-                    {#    $.ajax({#}
-                    {#        url: "{{ url_for('change_product_count',id=item.id) }}",#}
-                    {#        method: 'post',#}
-                    {#        data:{'count': +$("#count-input{{ item.id }}").val()},#}
-                    {#        dataType: 'html',#}
-                    {#        success: function (data) {#}
-                    {#            alert(data);#}
-                    {#            alert(document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]);#}
-                    {#            alert(-{{item.price}});#}
-                    {#            alert(document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]-{{item.price}});#}
-                    {#            if(data['up']){#}
-                    {#                let res = document.querySelector('#product{{ item.id }}-price').innerText.match(/[\d/.]+/g)[0]-{{ item.price }};#}
-                    {#                document.querySelector('#total_price').innerText = `Всего: ${document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]-{{item.price}}}`;#}
-                    {#                document.querySelector('#product{{ item.id }}-price').innerText =#}
-                    {#                `Стоимость: ${res}`;#}
-                    {#            } else {#}
-                    {#                document.querySelector('#total_price').innerText = `Всего: ${+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + +{{item.price}}}`;#}
-                    {#                document.querySelector('#product{{ item.id }}-price').innerText =#}
-                    {#                `Стоимость: ${+document.querySelector('#product{{ item.id }}-price').innerText.match(/[\d/.]+/g)[0] + +{{ item.price }}}`;#}
-                    {#            }#}
-                    {#        }#}
-                    {#    })#}
-                    {#})#}
 
-"""
 
 if __name__ == "__main__":
     app.run(port=7000, debug=True)

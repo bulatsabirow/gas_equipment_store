@@ -54,7 +54,22 @@
             </div>
         {% endfor %}
         <p><b id="total_price">Всего: {{ total_amount|round(2) }}</b></p>
+        {% if current_user.is_authenticated %}
+            <button id="offer">Оформить заказ</button>
+        {% else %}
+            <p><b>Пожалуйста, авторизуйтесь в системе, чтобы оформить заказ</b></p>
+            <a href="{{ url_for('auth') }}">Авторизация</a>
+        {% endif %}
     {% else %}
         <p><b>В вашей корзине нет товаров...</b></p>
     {% endif %}
+    <script>
+        $('#offer').on('click', function () {
+            $.ajax({
+                url: "{{ url_for('append_offer') }}",
+                method: 'post',
+            });
+            document.location.href = "{{ url_for('offer_view') }}";
+        })
+    </script>
 {% endblock %}

@@ -12,14 +12,14 @@
         {% endif %}
     {% endfor %}
     {% if product.count > 0 %}
-        <button id="cart-btn" class="{% if not product.id in session['cart'] %}buy{% else %}redirect{% endif %}-btn">
-            {% if not product.id in session['cart'] %}
-                Добавить
-            {% else %}
-                Перейти
-            {% endif %}
-            в корзину
-        </button>
+            <button id="cart-btn" class="{% if not product.id in session['cart'] %}buy{% else %}redirect{% endif %}-btn">
+                {% if not product.id in session['cart'] %}
+                    Добавить
+                {% else %}
+                    Перейти
+                {% endif %}
+                в корзину
+            </button>
     {% else %}
         <p><b>Товар временно недоступен</b></p>
     {% endif %}
@@ -44,7 +44,7 @@
                 document.querySelector('#cart-btn').innerText = 'Перейти в корзину';
                 $.ajax({
                     url: '{{ url_for("append_to_cart",id=product.id) }}',
-                    method: 'get',
+                    method: 'post',
                 })
             }
             else {
