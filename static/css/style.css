@@ -1,0 +1,38 @@
+*{
+    margin: 0;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+}
+.footer {
+    flex: 0 0 auto;
+}
+.header {
+    flex: 0 0 auto;
+    height: 100px;
+	box-shadow: .1px .1px 5px #E0E0E0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.main {
+    flex: 1 0 auto;
+}
+.cart {
+    width: 30px;
+    height: 30px;
+}
+.header-container {
+    width: 50%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+
+}
+.header-container>* {
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
