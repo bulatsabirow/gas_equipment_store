@@ -1,16 +1,17 @@
 {% extends 'base.html' %}
 {% block body %}
-    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
-    <button id="wishlist-btn">
+    <div class="product-wrapper">
+        <div class="left-side">
+            <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
+    <button id="wishlist-btn"
+            class="btn btn-{% if in_wishlist %}danger{% else %}success{% endif %}">
          {% if in_wishlist %}Удалить из избранного{% else %}Добавить в избранное{% endif %}
     </button>
-    {% for attr in product %}
-        {% if attr == 'image' %}
-            <p><img alt="<Фото не найдено>" src="../static/img/{{ product[attr] }}"></p>
-        {% else %}
-            <p>{{ product[attr] }}</p>
-        {% endif %}
-    {% endfor %}
+    <p class="product-title">{{ product.title }}</p>
+    <div class="product-photo">
+        <img alt="" src="../static/img/{% if product.image %}{{ product.image }}{% else %}placeholder.png{% endif %}">
+    </div>
+    <p class="product-price">{{ product.price }}</p>
     {% if product.count > 0 %}
             <button id="cart-btn" class="{% if not product.id in session['cart'] %}buy{% else %}redirect{% endif %}-btn">
                 {% if not product.id in session['cart'] %}
@@ -23,14 +24,26 @@
     {% else %}
         <p><b>Товар временно недоступен</b></p>
     {% endif %}
+        </div>
+    <div class="right-side">
+        <div class="product-description">
+            <h3>Описание:</h3>
+            <blockquote>{{ product.description }}</blockquote>
+        </div>
+    </div>
+    </div>
     <script src="{{ url_for('static', filename='js/product.js') }}"></script>
     <script>
         $('#wishlist-btn').on('click', function() {
         if(document.querySelector('#wishlist-btn').innerText === 'Удалить из избранного'){
             document.querySelector('#wishlist-btn').innerText = 'Добавить в избранное';
+            document.querySelector('#wishlist-btn').classList.remove('btn-danger');
+            document.querySelector('#wishlist-btn').classList.add('btn-success');
         }
         else {
             document.querySelector('#wishlist-btn').innerText = 'Удалить из избранного';
+            document.querySelector('#wishlist-btn').classList.remove('btn-success');
+            document.querySelector('#wishlist-btn').classList.add('btn-danger');
         }
         $.ajax({
             url: '{{ url_for("add_to_wishlist",id=product.id) }}',

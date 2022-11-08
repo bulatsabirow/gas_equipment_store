@@ -86,10 +86,11 @@ def auth():
         if user is not None and check_password_hash(user.password, password):
             login_user(user)
             print(current_user.is_authenticated)
+            if 'next' in request.args:
+                return redirect(request.args.get('next'))
+            return redirect(url_for('goods_list'))
         else:
             message = 'Неправильные адрес электронной почты или пароль'
-        if 'next' in request.args:
-            return redirect(request.args.get('next'))
     return render_template('auth.html', **{
         'message': message,
         'form': form,

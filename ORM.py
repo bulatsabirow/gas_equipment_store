@@ -123,7 +123,7 @@ class GoodsInterface(BaseInterface, ABC):
 
         print('cat:', category)
         print('brand:', brand)
-        print(f'SELECT id, title, description, price, image,'
+        print('filter-query:', f'SELECT id, title, description, price, image,'
               f'category, brand, count'
               f' FROM goods'
               f' WHERE (title ILIKE \'%{text}%\' OR'
@@ -131,11 +131,11 @@ class GoodsInterface(BaseInterface, ABC):
               f' {brand} AND {category};')
         text = '%' + text + '%'
         return [GoodsModel(*item) for item in BaseInterface.raw_select(f'SELECT id, title, description, price, image,'
-                                                                   f'category, brand, count'
-                                                                   f' FROM goods'
-                                                                   f' WHERE (title ILIKE %s OR'
-                                                                   f' description ILIKE %s) AND'
-                                                                   f' {brand} AND {category};', (text, text)) ]
+                                                                       f'category, brand, count'
+                                                                       f' FROM goods'
+                                                                       f' WHERE (title ILIKE %s OR'
+                                                                       f' description ILIKE %s) AND'
+                                                                       f' {brand} AND {category};', (text, text))]
 
     @staticmethod
     def stringify(value=''):

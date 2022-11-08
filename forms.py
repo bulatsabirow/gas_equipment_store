@@ -8,9 +8,10 @@ from ORM import CATEGORY_CHOICES, BRAND_CHOICES
 
 
 class AuthForm(FlaskForm):
-    email = StringField('Адрес электронной почты ', validators=[Email()])
+    email = StringField('Адрес электронной почты ', validators=[Email(message='Адрес электронной почты недействителен')],
+                        render_kw={'class': ''})
     password = PasswordField('Пароль ', validators=[DataRequired()])
-    submit = SubmitField(label='Войти')
+    submit = SubmitField(label='Войти', render_kw={'class': 'btn btn-primary'})
 
 
 class RegisterForm(AuthForm):

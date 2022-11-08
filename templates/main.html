@@ -1,12 +1,10 @@
 {% extends 'base.html' %}
 {% block body %}
-        <h2>
-        {% if current_user.is_authenticated %}
-            Привет, {{ current_user.name }}!
-        {% endif %}
-        </h2>
-    <form method="get">
-        <input type="text" name="text_filter" placeholder="Введите имя или описание товара..."
+    <div class="aside-content">
+    <div class="filter-block">
+        <h3>Фильтры</h3>
+        <form method="get">
+        <input class="input-search" type="text" name="text_filter" placeholder="Поиск..."
                value="{{ search|default('', true) }}">
         <br>
         <b>Категории</b>
@@ -37,14 +35,27 @@
             <input type="checkbox" name="null_brand" value="null_brand"
              {% if "null_brand" in chosen_brands %}checked{% endif %}>
         </label>
-        <button>Найти!</button>
+        <div class="button-div">
+            <button class="btn btn-primary">Применить</button>
+        </div>
     </form>
-    <button id="reset-btn">Сбросить все фильтры</button>
-    {% for product in goods %}
-        <p><a href="{{ url_for('product', id=product.id) }}">{{ product.title }}</a></p>
-        <p>{{ product.description[:15] }}...</p>
-        <p>{{ product.price }}</p>
-    {% endfor %}
+    <div>
+        <button style="width:111px;" id="reset-btn" class="btn btn-danger">Сбросить</button>
+    </div>
+    </div>
+    </div>
+    <div class="main-content">
+        {% for product in goods %}
+            <div class="product-card">
+                <p class="product-card-title-paragraph"><a class="product-card-title" href="{{ url_for('product', id=product.id) }}">{{ product.title }}</a></p>
+                <div class="product-card-photo"><img alt=""
+                                                     src="../static/img/{% if product.image %}{{ product.image }}{% else %}placeholder.png{% endif %}">
+                </div>
+                <p class="product-card-description">{{ product.description[:30] }}...</p>
+                <p class="product-price">{{ product.price }}</p>
+            </div>
+        {% endfor %}
+    </div>
     <script>
         let resetButton = document.getElementById('reset-btn');
         resetButton.onclick = () => document.location.href = "{{ url_for('goods_list') }}";

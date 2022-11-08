@@ -1,30 +1,32 @@
 {% extends 'base.html' %}
 {% block body %}
-    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
-    {% if message %}
-        <b>{{ message }}</b>
-    {% endif %}
-    <form method="post">
-{#        <label for="">mail:#}
-{#            <input type="text" name="email" placeholder="Адрес почты...">#}
-{#        </label>#}
-{#        <label>Пароль:#}
-{#            <input type="password" name="password" placeholder="Пароль...">#}
-{#        </label>#}
-{#        <button>Войти</button>#}
-        {{ form.csrf_token() }}
-        {% for field in form if field.name != 'csrf_token' %}
-            <p>
-            <label>
-            {% if field.name != 'submit' %}
-                {{ field.label()}}
-            {% endif %}
-                {{ field }}
-            </label>
-            {% for error in field.errors %}
-                {{ error }}
+    <div class="auth-container">
+        <div class="auth-wrapper">
+        <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
+        <form method="post">
+        <div class="auth-form">
+            <h2 class="auth-form-title">Авторизация</h2>
+            {{ form.csrf_token() }}
+            {% for field in form if field.name != 'csrf_token' %}
+                <div class="field">
+                {% if field.name != 'submit' %}
+                    {{ field.label(_class="field-label")}}
+                {% endif %}
+                    {{ field }}
+                {% for error in field.errors %}
+                    <div class="alert-help alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+                </div>
             {% endfor %}
-            </p>
-        {% endfor %}
-    </form>
+            {% if message %}
+                <div class="alert-help alert alert-danger" role="alert">
+                    <b>{{ message }}</b>
+                </div>
+            {% endif %}
+        </div>
+        </form>
+        </div>
+    </div>
 {% endblock %}

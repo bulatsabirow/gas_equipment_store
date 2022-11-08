@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block body %}
-    <h1 style="color: red">Страница не найдена</h1>
-    <p><b>Вероятно, вы ввели неправильный адрес</b></p>
-    <a href="{{ url_for('goods_list') }}">Перейти на главную страницу</a>
+    <div class="error-wrapper">
+        <div class="error-block">
+            <p class="error-message">Страница не найдена</p>
+            <p><b>Вероятно, вы ввели неправильный адрес</b></p>
+            <a href="{{ url_for('goods_list') }}">Перейти на главную страницу</a>
+        </div>
+    </div>
 {% endblock %}
