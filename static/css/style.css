@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap');
 body{
     margin: 0;
     font-family: 'Roboto', sans-serif;;
@@ -39,7 +40,7 @@ body{
     justify-content: space-evenly;
 }
 .header-container>* {
-    margin-left: 20px;
+    margin-left: 10px;
 }
 .header-link {
     color: black;
@@ -104,6 +105,7 @@ body{
     font-weight: bold;
     font-size: 24px;
     margin-top: 10px;
+    margin-bottom: 4px;
 }
 .product-price::after {
     content: '₽';
@@ -187,3 +189,53 @@ body{
     width: 30%;
     margin-right: 10px;
 }
+.product-buy-btn {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+}
+.product-buy-btn-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 20px;
+}
+.buy-btn-main {
+    border: 1px solid darkorange;
+    background-color: orange;
+}
+.cart-btn-main {
+    border: 1px solid green;
+    background-color: greenyellow;
+}
+.product-price-and-buy-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+@media(min-width: 992px){
+    .flex-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+    .wishlist-icon::before {
+    content: '🖤';
+    display: block;
+    text-align: center;
+}
+.cart-icon::before {
+    content: '🛒';
+    display: block;
+    text-align: center;
+}
+}
+@media (max-width: 991px) {
+    .header-container {
+        margin-top: 20px;
+        display: flex;
+        width: 100%;
+        justify-content: space-evenly;
+    }
+}
+

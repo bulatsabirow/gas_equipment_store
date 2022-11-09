@@ -24,27 +24,27 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0 header-container">
             {% if not current_user.is_authenticated  %}
-                <li class="nav-item">
+                <li class="nav-item flex-item">
                     <a class="header-link" href="{{  url_for('registration') }}">Зарегистрироваться</a>
                 </li>
-            <li class="nav-item">
+            <li class="nav-item flex-item">
                 <a class="header-link" href="{{ url_for('auth') }}">Войти</a>
             </li>
             {% else %}
             {% if current_user.is_admin %}
-                <li class="nav-item">
+                <li class="nav-item flex-item">
                     <a class="header-link" href="/admin">Войти в панель администрирования</a>
                 </li>
             {% endif %}
-            <li class="nav-item">
+            <li class="nav-item flex-item">
                 <a class="header-link" href="{{ url_for('logout_view') }}">Выйти</a>
             </li>
             {% endif %}
               <li class="nav-item">
-                  <a class="header-link" href="{{ url_for('cart') }}">🛒 Kорзина</a>
+                  <a class="header-link" href="{{ url_for('cart') }}"><span class="cart-icon"></span>Kорзина</a>
               </li>
             <li class="nav-item">
-                <a class="header-link" href="{{ url_for('wishlist_view') }}">🖤  Избранное</a>
+                <a class="header-link" href="{{ url_for('wishlist_view') }}"><span class="wishlist-icon"></span>Избранное</a>
             </li>
           </ul>
         </div>

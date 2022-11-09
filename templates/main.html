@@ -2,7 +2,7 @@
 {% block body %}
     <div class="aside-content">
     <div class="filter-block">
-        <h3>Фильтры</h3>
+        <b>Фильтры</b>
         <form method="get">
         <input class="input-search" type="text" name="text_filter" placeholder="Поиск..."
                value="{{ search|default('', true) }}">
@@ -52,12 +52,39 @@
                                                      src="../static/img/{% if product.image %}{{ product.image }}{% else %}placeholder.png{% endif %}">
                 </div>
                 <p class="product-card-description">{{ product.description[:30] }}...</p>
-                <p class="product-price">{{ product.price }}</p>
+                <div class="product-price-and-buy-wrapper">
+                    <div class="product-buy-btn-div">
+                        <p class="product-price">{{ product.price }}</p>
+                    </div>
+                    {% if product.count > 0 %}
+                        <div class="product-buy-btn-div">
+                            <button id="btn-main{{ product.id }}" class="{% if product.id not in session.get('cart', {}) %}buy{% else %}cart{% endif %}-btn-main">
+                                <img class="product-buy-btn" alt="" src="../static/img/{% if product.id not in session.get('cart', {}) %}263142.png{% else %}free-png.ru-2.png{% endif %}"></button>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
+            <script>
+                $('#btn-main{{ product.id }}').on('click', function (){
+                    if(document.querySelector('#btn-main{{ product.id }}').classList.contains('buy-btn-main')){
+                        document.querySelector('#btn-main{{ product.id }}').classList.remove('buy-btn-main');
+                        document.querySelector('#btn-main{{ product.id }}').classList.add('cart-btn-main');
+                        document.querySelector('#btn-main{{ product.id }}').querySelector('img').src = '../static/img/free-png.ru-2.png';
+                        $.ajax({
+                            url: '{{ url_for("append_to_cart",id=product.id) }}',
+                            method: 'post',
+                        })
+                    }
+                    else {
+                        document.location.href = "{{ url_for('cart') }}";
+                    }
+                })
+            </script>
         {% endfor %}
     </div>
     <script>
         let resetButton = document.getElementById('reset-btn');
         resetButton.onclick = () => document.location.href = "{{ url_for('goods_list') }}";
     </script>
+
 {% endblock %}
