@@ -1,18 +1,20 @@
 {% extends 'base.html' %}
 {% block body %}
-    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
+    <div class="cart-wrapper">
+        <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
+    <h1>Корзина</h1>
     {% if cart %}
-        {% for item in cart %}
-            <div class="card{{ item.id }}">
-                <p>{{ item }}</p>
+        <div class="cart-cards-list">
+            {% for item in cart %}
+            <div id="card{{ item.id }}" class="cart-card">
+                {% include 'partialtags/cart_and_wishlist_card.html' %}
                 <p style="color: green">В наличии: {{ item.count }}</p>
                 <form method="post">
                     <input name="count" id="count-input{{ item.id }}" type="number" min="1" max="{{ item.count }}" value="{{ session['cart'][item.id]}}"
-                           style="width: 50px">
+                    style="width: 50px">
                 </form>
-                </p>
-                <p id="product{{ item.id }}-price">Стоимость: {{ (session['cart'][item.id] * item.price)|round(2) }}</p>
-                <button id="delete{{ item.id }}">Удалить из корзины</button>
+                <p id="product{{ item.id }}-price">Стоимость: {{ (session['cart'][item.id] * item.price)|round(2) }}₽</p>
+                <button id="delete{{ item.id }}" class="btn btn-danger delete-from-cart-btn">Удалить из корзины</button>
                 <script>
                     $('#delete{{ item.id }}').on('click', function (){
                         $.ajax({
@@ -25,10 +27,10 @@
                                 alert(data['price']);
                                 alert(data['count']);
                                 document.querySelector('#total_price').innerText = 'Всего: ' +
-                                    `${+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] - (+data['count']) * (+data['price'])}`
+                                    `${+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] - (+data['count']) * (+data['price'])}₽`
                             }
                         })
-                        document.querySelector('.card{{ item.id }}').remove();
+                        document.querySelector('#card{{ item.id }}').remove();
                     })
                     $("#count-input{{ item.id }}").bind('mouseup keyup', function () {
                         $.ajax({
@@ -44,18 +46,19 @@
                                 {#alert('val:' + +$("#count-input{{ item.id }}").val());#}
                                 {#alert(data['prev']);#}
                                 {#alert(data['up']);#}
-                                let res = `Всего: ${Math.round((+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + (+$("#count-input{{ item.id }}").val() - data['prev']) * {{ item.price }})*100)/100}`;
+                                let res = `Всего: ${Math.round((+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + (+$("#count-input{{ item.id }}").val() - data['prev']) * {{ item.price }})*100/100)}₽`;
                                 document.querySelector('#total_price').innerText = res;
-                                document.querySelector('#product{{ item.id }}-price').innerText = `Стоимость: ${Math.round((+$("#count-input{{ item.id }}").val() * {{ item.price }})*100)/100}`;
+                                document.querySelector('#product{{ item.id }}-price').innerText = `Стоимость: ${Math.round((+$("#count-input{{ item.id }}").val() * {{ item.price }})*100/100)}₽`;
                                 }
                             }
                         )})
                 </script>
             </div>
         {% endfor %}
-        <p><b id="total_price">Всего: {{ total_amount|round(2) }}</b></p>
+        </div>
+        <p><b id="total_price">Всего: {{ total_amount|round(2) }}₽</b></p>
         {% if current_user.is_authenticated %}
-            <button id="offer">Оформить заказ</button>
+            <button id="offer" class="btn btn-outline-success">Оформить заказ</button>
         {% else %}
             <p><b>Пожалуйста, авторизуйтесь в системе, чтобы оформить заказ</b></p>
             <a href="{{ url_for('auth') }}">Авторизация</a>
@@ -72,4 +75,5 @@
             document.location.href = "{{ url_for('offer_view') }}";
         })
     </script>
+    </div>
 {% endblock %}

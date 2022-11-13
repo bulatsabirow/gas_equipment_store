@@ -1,11 +1,29 @@
 {% extends 'base.html' %}
 {% block body %}
-    <h1>Избранное</h1>
-    {% if wishlist %}
-    {% for item in wishlist %}
-        <p><a href="{{ url_for('product',id=item.id) }}">{{ item.title }}</a></p>
-    {% endfor %}
-    {% else %}
-        <p><b>У вас пока нет товаров в избранном!</b></p>
-    {% endif %}
+    <div class="wishlist-wrapper">
+        <h1>Избранное</h1>
+        <div class="wishlist-container">
+        {% if wishlist %}
+        {% for item in wishlist %}
+            <div class="wishlist-card" id="wishlist-card{{ item.id }}">
+                {% include 'partialtags/cart_and_wishlist_card.html' %}
+                <form>
+                    <button class="btn btn-danger" id="wishlist-remove-btn{{ item.id }}">Удалить из избранного</button>
+                </form>
+            </div>
+            <script>
+                $('#wishlist-remove-btn{{ item.id }}').on('click', function () {
+                    $.ajax({
+                        url: "{{ url_for('remove_from_wishlist',id=item.id) }}",
+                        method: 'post',
+                    })
+                    document.querySelector('#wishlist-card{{ item.id }}').remove();
+                })
+        </script>
+        {% endfor %}
+        {% else %}
+            <p><b>У вас пока нет товаров в избранном!</b></p>
+        {% endif %}
+        </div>
+    </div>
 {% endblock %}

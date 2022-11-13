@@ -1,0 +1,7 @@
+<h2>
+    <a class="product-card-title" href="{{ url_for('product',id=item.id) }}">{{ item.title }}</a>
+</h2>
+<div class="cart-card-image">
+    <img alt="" src="../static/img/{% if item.image %}{{ item.image }}{% else %}placeholder.png{% endif %}">
+</div>
+

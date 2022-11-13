@@ -157,10 +157,17 @@ def add_to_wishlist(id):
     abort(404)
 
 
-def admin_required(func: Callable) -> Callable:
-    if type(current_user) == AnonymousUserMixin  and current_user.is_admin:
-        return func
-    return raw_page_not_found
+@app.route('/remove_from_wishlist/<int:id>', methods=["GET", "POST"])
+def remove_from_wishlist(id):
+    print('wishlist_before_remove:', session['wishlist'])
+    if request.method == 'POST':
+        session.modified = True
+        try:
+            session['wishlist'].pop(str(id))
+        except KeyError:
+            pass
+    print('wishlist_after_remove:', session['wishlist'])
+    abort(404)
 
 
 @app.route('/admin/add_product', methods=['GET', 'POST'])

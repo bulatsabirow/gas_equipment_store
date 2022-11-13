@@ -52,23 +52,72 @@
                                                      src="../static/img/{% if product.image %}{{ product.image }}{% else %}placeholder.png{% endif %}">
                 </div>
                 <p class="product-card-description">{{ product.description[:30] }}...</p>
-                <div class="product-price-and-buy-wrapper">
+{#                <div class="product-price-and-buy-wrapper">#}
                     <div class="product-buy-btn-div">
                         <p class="product-price">{{ product.price }}</p>
                     </div>
-                    {% if product.count > 0 %}
-                        <div class="product-buy-btn-div">
+{#                </div>#}
+            {% if product.count > 0 %}
+                        <div class="product-buy-btn-wrapper">
+                            <div class="product-buy-btn-div">
+                                <div id="buy-btn-description-id{{ product.id }}"
+                                 class="buy-btn-description elem-hidden">
+                                {% if product.id not in session.get('cart', {}) %}
+                                    Добавить товар в корзину
+                                {% else %}
+                                    Перейти в корзину
+                                {% endif %}
+                            </div>
                             <button id="btn-main{{ product.id }}" class="{% if product.id not in session.get('cart', {}) %}buy{% else %}cart{% endif %}-btn-main">
-                                <img class="product-buy-btn" alt="" src="../static/img/{% if product.id not in session.get('cart', {}) %}263142.png{% else %}free-png.ru-2.png{% endif %}"></button>
+                                <img class="product-buy-btn" alt="" src="../static/img/{% if product.id not in session.get('cart', {}) %}263142.png{% else %}free-png.ru-2.png{% endif %}">
+                            </button>
+                            <button id="wishlist-btn-main{{ product.id }}" class="{% if product.id not in session.get('wishlist', {}) %}add{% else %}remove{% endif %}-wishlist-main-btn">
+                                <img class="add-wishlist-btn" alt=""
+                                     src="../static/img/{% if product.id not in session.get('wishlist', {}) %}14949.png{% else %}833472.png{% endif %}">
+                            </button>
+                            <div id="wishlist-btn-description-id{{ product.id }}"
+                                 class="wishlist-btn-description elem-hidden">
+                                {% if product.id not in session.get('cart', {}) %}
+                                    Добавить в избранное
+                                {% else %}
+                                    Перейти в избранное
+                                {% endif %}
+                            </div>
                         </div>
+                            </div>
+                    {% else %}
+                        <p style="margin-left: 20px;color:red;"><b>Товар временно отсутствует в продаже</b></p>
                     {% endif %}
-                </div>
             </div>
             <script>
+                $("#wishlist-btn-main{{ product.id }}").on('click', function () {
+                    let wishlistButton{{ product.id }} = document.querySelector('#wishlist-btn-main{{ product.id }}');
+                    if (wishlistButton{{ product.id }}.classList.contains('add-wishlist-main-btn')){
+                        wishlistButton{{ product.id }}.classList.remove('add-wishlist-main-btn');
+                        wishlistButton{{ product.id }}.classList.add('remove-wishlist-main-btn');
+                        document.querySelector('#wishlist-btn-description-id{{ product.id }}').innerText = 'Перейти в избранное';
+                        wishlistButton{{ product.id }}.querySelector('img').src = '../static/img/833472.png';
+                        $.ajax({
+                            url: "{{ url_for('add_to_wishlist',id=product.id) }}",
+                            method: 'post',
+                        })
+                    } else {
+                        document.location.href = "{{ url_for('wishlist_view') }}";
+                    }
+                });
+                $('#wishlist-btn-main{{ product.id }}').on('mouseover', function () {
+                    let wishlistDescription{{ product.id }} = document.querySelector('#wishlist-btn-description-id{{ product.id }}');
+                    wishlistDescription{{ product.id }}.classList.remove('elem-hidden');
+                })
+                $('#wishlist-btn-main{{ product.id }}').on('mouseout', function () {
+                    let wishlistDescription{{ product.id }} = document.querySelector('#wishlist-btn-description-id{{ product.id }}');
+                    wishlistDescription{{ product.id }}.classList.add('elem-hidden');
+                })
                 $('#btn-main{{ product.id }}').on('click', function (){
                     if(document.querySelector('#btn-main{{ product.id }}').classList.contains('buy-btn-main')){
                         document.querySelector('#btn-main{{ product.id }}').classList.remove('buy-btn-main');
                         document.querySelector('#btn-main{{ product.id }}').classList.add('cart-btn-main');
+                        document.querySelector('#buy-btn-description-id{{ product.id }}').innerText = 'Перейти в корзину';
                         document.querySelector('#btn-main{{ product.id }}').querySelector('img').src = '../static/img/free-png.ru-2.png';
                         $.ajax({
                             url: '{{ url_for("append_to_cart",id=product.id) }}',
@@ -78,6 +127,14 @@
                     else {
                         document.location.href = "{{ url_for('cart') }}";
                     }
+                })
+                $('#btn-main{{ product.id }}').on('mouseover', function () {
+                    let description{{ product.id }} = document.querySelector('#buy-btn-description-id{{ product.id }}');
+                    description{{ product.id }}.classList.remove('elem-hidden');
+                })
+                $('#btn-main{{ product.id }}').on('mouseout', function () {
+                    let description{{ product.id }} = document.querySelector('#buy-btn-description-id{{ product.id }}');
+                    description{{ product.id }}.classList.add('elem-hidden');
                 })
             </script>
         {% endfor %}
