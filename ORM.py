@@ -94,6 +94,9 @@ class UserInterface(BaseInterface):
     def update(self, **kwargs):
         return super(UserInterface, self).update(table_name='"user"', attr='email', **kwargs)
 
+    def remove(self):
+        return super(UserInterface, self).raw_delete(f"DELETE FROM \"user\" WHERE email = %s", (self.email,))
+
 
 class GoodsInterface(BaseInterface, ABC):
     def insert(self):

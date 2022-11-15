@@ -410,5 +410,15 @@ def change_user_data():
     return render_template('edit_profile.html', **{'form': form, 'error': error})
 
 
+@app.route("/delete_profile", methods=['GET', 'POST'])
+@login_required
+def delete_profile_view():
+    if request.method == 'POST':
+        UserModel.select(current_user.email).remove()
+        logout_user()
+        return redirect(url_for('goods_list'))
+    return render_template('delete_profile.html')
+
+
 if __name__ == "__main__":
     app.run(port=7000, debug=True)

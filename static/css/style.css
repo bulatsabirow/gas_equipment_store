@@ -315,3 +315,12 @@ body{
 .wishlist-wrapper {
     padding: 10px;
 }
+.profile-delete-wrapper {
+    padding: 10px;
+    width: 100%;
+}
+.profile-delete-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
