@@ -1,7 +1,11 @@
 import os
+import re
+import time
 from datetime import timedelta, datetime, timezone
 from typing import Callable
 from uuid import uuid4
+
+import psycopg2
 
 from flask import Flask, render_template, request, redirect, url_for, session, abort
 from flask_login import current_user, login_user, logout_user, login_required, AnonymousUserMixin
@@ -9,7 +13,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 from ORM import GoodsModel, UserModel, OrderModel, BookingModel, CATEGORY_CHOICES, BRAND_CHOICES
-from forms import RegisterForm, AuthForm, AddProductForm, EditProductForm
+from forms import RegisterForm, AuthForm, AddProductForm, EditProductForm, EditProfileForm
 from login import *
 
 app = Flask(__name__)
@@ -36,6 +40,8 @@ def load_user(email: str):
 
 @app.route('/goods')
 def goods_list():
+    print('goods_list', session)
+    print("SESSION{CART}:", session.get('cart', None))
     text_filter = request.args.get('text_filter', None)
     brands = set()
     categories = set()
@@ -64,15 +70,18 @@ def goods_list():
 @app.route('/register', methods=['GET', 'POST'])
 def registration():
     form = RegisterForm()
+    error = None
     if form.validate_on_submit():
         name = form.name.data
         email = form.email.data
         password = generate_password_hash(form.password.data)
         is_admin = False
         user = UserModel(name, email, password, is_admin)
-        user.insert()
-        login_user(user)
-    return render_template('register.html', form=form)
+        if not user.insert():
+            error = True
+        else:
+            login_user(user)
+    return render_template('register.html', form=form, error=error)
 
 
 @app.route('/auth', methods=['POST', 'GET'])
@@ -103,6 +112,13 @@ def logout_view():
     return redirect(url_for('goods_list'))
 
 
+@app.route('/clear_session', methods=['POST', 'GET'])
+def clear_session():
+    session.pop('cart', None)
+    time.sleep(0.3)
+    return redirect(url_for('my_page_view'))
+
+
 @app.route('/product/<int:id>', methods=['POST', 'GET'])
 def product(id):
     session.modified = True
@@ -122,6 +138,8 @@ def product(id):
 
 @app.route('/cart')
 def cart():
+    print('cart', session)
+    print('cart session[cart]:', session.get('cart', None))
     goods = GoodsModel.find_all(session.get('cart', None))
     total_amount = None
     if goods:
@@ -172,6 +190,7 @@ def remove_from_wishlist(id):
 
 @app.route('/admin/add_product', methods=['GET', 'POST'])
 def add_product_view():
+    error = None
     if type(current_user) != AnonymousUserMixin and current_user.is_admin:
         form = AddProductForm()
         if form.validate_on_submit():
@@ -188,11 +207,13 @@ def add_product_view():
             if image.filename:
                 image.save(os.path.join(app.config['UPLOAD_FOLDER'],
                                                   secure_filename(image.filename)))
-            GoodsModel(title=title, description=description, price=price,
-                       category=category, image=image.filename if image.filename else None, count=count, brand=brand, id='').insert()
+            product_model = GoodsModel(title=title, description=description, price=price,
+                       category=category, image=image.filename if image.filename else None, count=count, brand=brand, id='')
+            error = not product_model.insert()
         return render_template('edit_product.html', **{
             'form': form,
             'is_add': True,
+            'error': error,
         })
     else:
         abort(404)
@@ -206,14 +227,6 @@ def admin_view():
         return render_template('admin.html', **{
             'products': GoodsModel.all(),
         })
-    else:
-        abort(404)
-
-
-@app.route('/admin/delete_product')
-def delete_product_view():
-    if getattr(current_user, 'is_admin', None):
-        return render_template('delete_product.html')
     else:
         abort(404)
 
@@ -232,7 +245,7 @@ def delete_product(id):
     abort(404)
 
 
-@app.route('/admin/edit_product/<int:id>', methods=['GET', 'POST'])
+@app.route('/edit_product/<int:id>', methods=['GET', 'POST'])
 def edit_product_view(id):
     if getattr(current_user, 'is_admin', None):
         unit = GoodsModel.select(id)
@@ -269,6 +282,7 @@ def edit_product_view(id):
                            secure_filename(image.filename)))
                 diff['image'] = image.filename
             unit.update(**diff)
+            return redirect(url_for('product', id=unit.id))
 
         return render_template('edit_product.html', **{
             'form': form,
@@ -278,25 +292,26 @@ def edit_product_view(id):
         abort(404)
 
 
-@app.route('/offer/')
-def offer_view():
-    return render_template('offer.html')
-
-
 @app.route('/append_offer_to_database', methods=['POST', 'GET'])
 def append_offer():
+    print('append_offer', session)
     if request.method == 'POST':
+        session.modified = True
         identification: str = uuid4().hex
         print('id:', identification)
+        total_amount = request.form.get('total_amount')
+        print(total_amount)
         email = current_user.email
         BookingModel.insert(email=email, time_value=datetime.now(timezone.utc),
-                            uuid_key=identification)
+                            uuid_key=identification, total_amount=float(total_amount))
         booking = BookingModel.select(uuid_id=identification)
         print('booking:', booking)
         print('session[cart]', session['cart'])
         for product_id in session['cart']:
             OrderModel.insert(product_id, booking.id, session['cart'][product_id])
-        session['cart'].clear()
+            value = GoodsModel.select(product_id)
+            value.update(count=value.count-session['cart'][product_id])
+        print('SESSION after clear:', session)
     abort(404)
 
 
@@ -342,6 +357,57 @@ def change_product_count(id):
         print('after change count:', session['cart'])
         return {'up': up, 'prev': prev}
     abort(404)
+
+
+@app.route('/my')
+@login_required
+def my_page_view():
+    user_bookings = BookingModel.select_by_user(current_user.email)
+    return render_template('my.html', **{
+        'bookings': user_bookings,
+    })
+
+
+@app.route('/booking/<uuid_id>')
+@login_required
+def my_orders_view(uuid_id):
+    orders_with_titles = OrderModel.select_orders_by_uuid_id(uuid_id)
+    print('orders:', orders_with_titles)
+    return render_template('order.html', **{
+        'orders': orders_with_titles,
+        'id': uuid_id,
+    })
+
+
+@app.route('/change_user_data', methods=['GET', 'POST'])
+@login_required
+def change_user_data():
+    error = False
+    user = current_user
+    json_user = user.to_json()
+    form = EditProfileForm(name=user.name, email=user.email)
+    diff = {}
+    if form.validate_on_submit():
+        for attr in form.data:
+            if attr in json_user and form.data[attr] != json_user[attr]:
+                if attr == 'password':
+                    if re.search(r'\w|\d', form.data[attr]):
+                        diff[attr] = generate_password_hash(form.data[attr])
+                    else:
+                        continue
+                else:
+                    diff[attr] = form.data[attr]
+        if 'email' in diff:
+            response = UserModel.select(diff['email'])
+            if response:
+                error = True
+        if diff and not error:
+            user.update(**diff)
+            if 'email' in diff:
+                logout_user()
+                login_user(UserModel.select(diff['email']))
+            return redirect(url_for('my_page_view'))
+    return render_template('edit_profile.html', **{'form': form, 'error': error})
 
 
 if __name__ == "__main__":

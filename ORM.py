@@ -4,40 +4,81 @@ from flask_login import UserMixin
 import psycopg2
 
 
-CATEGORY_CHOICES = {'gas stoves', 'geysers', 'gas meter', 'kitchen hoods', 'null_category'}
-BRAND_CHOICES = {'Atlan', 'Graude', 'De Luxe', 'Gefest', 'Oasis', 'Beko', 'null_brand'}
+CATEGORY_CHOICES = ['gas stoves', 'geysers', 'gas meter', 'kitchen hoods', 'null_category']
+BRAND_CHOICES = ['Atlan', 'Graude', 'De Luxe', 'Gefest', 'Oasis', 'Beko', 'null_brand']
 
 
-CON = psycopg2.connect(user='postgres',
-                       password='postgres',
-                       dbname='gas_equipment',
-                       host='localhost',
-                       port=5432)
-CURSOR = CON.cursor()
+def db_conn():
+    return psycopg2.connect(user='postgres',
+                            password='postgres',
+                            dbname='gas_equipment',
+                            host='localhost',
+                            port=5432)
 
 
 class BaseInterface:
     @staticmethod
     def raw_select(query, params=()):
-        CURSOR.execute(query, params)
-        print("status:", CURSOR.statusmessage)
-        return CURSOR.fetchall()
+        CON = db_conn()
+        CURSOR = CON.cursor()
+        try:
+            CURSOR.execute(query, params)
+            print(CURSOR.query)
+        except Exception as ex:
+            print(ex)
+            print('RAW SELECT ERROR!!!')
+            CURSOR.execute("ROLLBACK")
+            CON.commit()
+            CON.close()
+        else:
+            print("status:", CURSOR.statusmessage)
+            res = CURSOR.fetchall()
+            CON.close()
+            return res
 
     @staticmethod
     def raw_insert(query, params=()):
-        CURSOR.execute(query, params)
-        CON.commit()
+        CON = db_conn()
+        CURSOR = CON.cursor()
+        try:
+            CURSOR.execute(query, params)
+            print(CURSOR.query)
+            CON.commit()
+        except Exception as ex:
+            print('RAW INSERT ERROR!!!')
+            print(ex)
+            CURSOR.execute("ROLLBACK")
+            CON.commit()
+            CON.close()
+            return
+        else:
+            CON.close()
+            return True
 
     raw_delete = raw_insert
 
     raw_update = raw_insert
 
+    @staticmethod
+    def stringify(value=''):
+        if type(value) == str:
+            return f'\'{value}\''
+        return value
+
+    def update(self, table_name, attr='id', **kwargs):
+        if not kwargs:
+            return
+        kwargs = [f'{key}={self.stringify(kwargs[key])}' for key in kwargs]
+        print(f'UPDATE {table_name} SET {", ".join(kwargs)} WHERE {attr} = {getattr(self, attr)};')
+        return BaseInterface.raw_update(f'UPDATE {table_name} SET {", ".join(kwargs)} WHERE {attr} = %s;', (getattr(self, attr), ))
+
 
 class UserInterface(BaseInterface):
     def insert(self):
-        return super(UserInterface, self).raw_insert(f'INSERT INTO "user"("name","password",email,is_admin)'
+        query_result = super(UserInterface, self).raw_insert(f'INSERT INTO "user"("name","password",email,is_admin)'
                                                      f' VALUES (%s,%s,'
                                                      f' %s,false)', (self.name, self.password, self.email,))
+        return query_result
 
     @staticmethod
     def select(email):
@@ -47,20 +88,25 @@ class UserInterface(BaseInterface):
         if not response:
             return None
         response = response[0]
+        print('user select response:', response)
         return UserModel(*response)
+
+    def update(self, **kwargs):
+        return super(UserInterface, self).update(table_name='"user"', attr='email', **kwargs)
 
 
 class GoodsInterface(BaseInterface, ABC):
     def insert(self):
-        category = 'null' if self.category is None else f'\'{self.category}\''
-        brand = 'null' if self.brand is None else f'\'{self.brand}\''
-        image = 'null' if self.image is None else f'\'{self.image}\''
-        return super(GoodsInterface, self).raw_insert(f'INSERT INTO goods(title, description, price, image,'
+        category = self.category
+        brand = self.brand
+        image = self.image
+        response = super(GoodsInterface, self).raw_insert(f'INSERT INTO goods(title, description, price, image,'
                                                   f' category, brand, count) VALUES (%s,'
                                                   f'%s ,%s ,%s ,'
                                                   f' %s, %s, %s);', (self.title, self.description,
                                                                                             self.price, image, category,
                                                                                             brand, self.count))
+        return response
 
     @staticmethod
     def select(goods_id):
@@ -79,10 +125,10 @@ class GoodsInterface(BaseInterface, ABC):
 
         x = [GoodsModel(*item) for item in BaseInterface.raw_select(f'SELECT id, title, description, price, image,'
                                                                     f' category, brand, count'
-                                                                    f' FROM goods;')]
+                                                                    f' FROM goods ORDER BY title;')]
         print('all() query:', f'SELECT id, title, description, price, image,'
                               f' category, brand, count'
-                              f' FROM goods;')
+                              f' FROM goods ORDER BY title;')
         print('x=', x)
         return x
 
@@ -144,11 +190,7 @@ class GoodsInterface(BaseInterface, ABC):
         return value
 
     def update(self, **kwargs):
-        if not kwargs:
-            return
-        kwargs = [f'{key}={self.stringify(kwargs[key])}' for key in kwargs]
-        print(f'UPDATE goods SET {", ".join(kwargs)} WHERE id = {self.id};')
-        return BaseInterface.raw_update(f'UPDATE goods SET {", ".join(kwargs)} WHERE id = %s;', (self.id, ))
+       return super(GoodsInterface, self).update(table_name='goods', **kwargs)
 
     def remove(self):
         return BaseInterface.raw_delete(f'DELETE FROM goods WHERE id = %s;', (self.id, ))
@@ -160,21 +202,36 @@ class OrderInterface(BaseInterface):
         return BaseInterface.raw_insert(f"INSERT INTO orders(product_id, booking_id, count) VALUES(%s, %s, %s)",
                                         (product_id, booking_id, count))
 
+    @staticmethod
+    def select_orders_by_uuid_id(uuid_id):
+        return [(OrderModel(*item), product_title, product_price) for *item, product_title, product_price in BaseInterface.raw_select(f"SELECT product_id, booking_id, o.count, o.id, g.title,g.price FROM orders o"
+                                        f" INNER JOIN booking b ON o.booking_id = b.id INNER JOIN goods g on o.product_id = g.id  WHERE "
+                                        f"b.uuid_key = %s", (uuid_id,))]
+
 
 class BookingInterface(BaseInterface):
     @staticmethod
-    def insert(email, uuid_key, time_value):
-        return BaseInterface.raw_insert(f"INSERT INTO booking(email,uuid_key,time) VALUES(%s,%s,%s)",
-                                                        (email, uuid_key, time_value))
+    def insert(email, uuid_key, time_value, total_amount):
+        return BaseInterface.raw_insert(f"INSERT INTO booking(email,uuid_key,time, total_amount) VALUES(%s,%s,%s,%s)",
+                                                        (email, uuid_key, time_value, total_amount))
 
     @staticmethod
     def select(uuid_id):
-        print('query:', f"SELECT email, uuid_key, time, id FROM booking"
+        print('query:', f"SELECT email, uuid_key, time, total_amount, id FROM booking"
                                                       f" WHERE uuid_key = {uuid_id}" )
-        response = BaseInterface.raw_select(f"SELECT email, uuid_key, time, id FROM booking"
+        response = BaseInterface.raw_select(f"SELECT email, uuid_key, time, total_amount, id FROM booking"
                                                       f" WHERE uuid_key = %s",
                                                       (uuid_id,))[0]
         return BookingModel(*response)
+
+    @staticmethod
+    def select_by_user(user_email):
+        response = BaseInterface.raw_select(f"SELECT email, uuid_key, time, total_amount, id FROM booking WHERE"
+                                            f" email = %s ORDER BY time desc", (user_email,))
+        print("SELECT_BY_USER BOOKING_INTERFACE:", f"SELECT email, uuid_key, time, total_amount, id FROM booking WHERE"
+                                                   f" email = {user_email} ORDER BY time desc")
+        return [BookingModel(*obj) for obj in response]
+
 
 
 class BaseObjectModel:
@@ -234,8 +291,9 @@ class OrderModel(BaseObjectModel, OrderInterface):
 
 
 class BookingModel(BaseObjectModel, BookingInterface):
-    def __init__(self, user_email, uuid_key, time, id=''):
+    def __init__(self, user_email, uuid_key, time, total_amount, id=''):
         self.id = id
         self.email = user_email
         self.uuid_key = uuid_key
         self.time = time
+        self.total_amount = total_amount

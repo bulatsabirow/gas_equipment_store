@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block style %}
+    <link href="../static/css/order.css" rel="stylesheet">
+{% endblock %}
+{% block body %}
+    <div class="orders-wrapper">
+        <h1>Заказ {{ id }}</h1>
+        <table class="table table-info">
+        <tr>
+            <th>Товар</th>
+            <th>Количество</th>
+            <th>Стоимость</th>
+        </tr>
+        {% for item,title,price in orders %}
+            <tr>
+                <td><a href="{{ url_for('product',id=item.product_id) }}">{{ title }}</a></td>
+                <td>{{ item.count }}</td>
+                <td>{{ item.count * price }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+{% endblock %}

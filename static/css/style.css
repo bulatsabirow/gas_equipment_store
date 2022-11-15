@@ -256,6 +256,11 @@ body{
     display: block;
     text-align: center;
 }
+.profile-icon::before {
+    text-align: center;
+    content: '👤';
+    display: block;
+}
 }
 @media (max-width: 991px) {
     .header-container {
@@ -268,6 +273,7 @@ body{
 /*cart.html*/
 .cart-wrapper {
     width: 100%;
+    padding: 10px;
 }
 .cart-cards-list {
     display: grid;
@@ -304,5 +310,8 @@ body{
 .wishlist-card {
     border: 1px solid black;
     margin-left: 1px;
+    padding: 10px;
+}
+.wishlist-wrapper {
     padding: 10px;
 }

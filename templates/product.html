@@ -2,7 +2,6 @@
 {% block body %}
     <div class="product-wrapper">
         <div class="left-side">
-            <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
     <button id="wishlist-btn"
             class="btn btn-{% if in_wishlist %}danger{% else %}success{% endif %}">
          {% if in_wishlist %}Удалить из избранного{% else %}Добавить в избранное{% endif %}
@@ -13,7 +12,7 @@
     </div>
     <p class="product-price">{{ product.price }}</p>
     {% if product.count > 0 %}
-            <button id="cart-btn" class="{% if not product.id in session['cart'] %}buy{% else %}redirect{% endif %}-btn">
+            <button id="cart-btn" class="btn btn-outline-{% if not product.id in session['cart'] %}success{% else %}info{% endif %} {% if not product.id in session['cart'] %}buy{% else %}redirect{% endif %}-btn">
                 {% if not product.id in session['cart'] %}
                     Добавить
                 {% else %}
@@ -29,6 +28,14 @@
         <div class="product-description">
             <h3>Описание:</h3>
             <blockquote>{{ product.description }}</blockquote>
+        </div>
+        <div class="product-description brand">
+            <h3>Бренд</h3>
+            <p>{% if product.brand %}{{ product.brand }}{% else %}Нет бренда{% endif %}</p>
+        </div>
+        <div class="product-description category">
+            <h3>Категория</h3>
+            <p>{% if product.category %}{{ product.category }}{% else %}Нет категории{% endif %}</p>
         </div>
     </div>
     </div>
@@ -54,6 +61,8 @@
             if(document.querySelector('#cart-btn').classList.contains('buy-btn')){
                 document.querySelector('#cart-btn').classList.remove('buy-btn');
                 document.querySelector('#cart-btn').classList.add('redirect-btn');
+                document.querySelector('#cart-btn').classList.remove('btn-outline-success');
+                document.querySelector('#cart-btn').classList.add('btn-outline-info');
                 document.querySelector('#cart-btn').innerText = 'Перейти в корзину';
                 $.ajax({
                     url: '{{ url_for("append_to_cart",id=product.id) }}',

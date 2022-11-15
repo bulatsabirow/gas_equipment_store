@@ -1,0 +1,11 @@
+.admin-wrapper{
+    width: 100%;
+}
+.admin-card {
+    margin-top: 10px;
+    border: 1px solid sandybrown;
+    background-color: lightgrey;
+}
+.admin-link {
+    font-size: 18px;
+}

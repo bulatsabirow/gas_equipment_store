@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% block body %}
-    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
-    <form method="post">
+    <div class="auth-container">
+    {#    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>#}
+{#    <form method="post">#}
 {#        <label for="">mail:#}
 {#            <input type="text" name="email" placeholder="Адрес почты...">#}
 {#        </label>#}
@@ -12,19 +13,46 @@
 {#            <input type="text" name="password" placeholder="Пароль...">#}
 {#        </label>#}
 {#        <button type="submit">Зарегистрироваться</button>#}
+{#            {{ form.csrf_token() }}#}
+{#            {% for field in form if field.name != 'csrf_token' %}#}
+{#                <p>#}
+{#                <label>#}
+{#                    {% if field.name != 'submit' %}#}
+{#                        {{ field.label() }}#}
+{#                    {% endif %}#}
+{#                    {{ field }}#}
+{#                </label>#}
+{#                {% for error in field.errors %}#}
+{#                    {{ error }}#}
+{#                {% endfor %}#}
+{#                </p>#}
+{#            {% endfor %}#}
+{#    </form>#}
+    <div class="auth-wrapper">
+        <form method="post">
+        <div class="auth-form">
+            <h2 class="auth-form-title">Регистрация</h2>
             {{ form.csrf_token() }}
             {% for field in form if field.name != 'csrf_token' %}
-                <p>
-                <label>
-                    {% if field.name != 'submit' %}
-                        {{ field.label() }}
-                    {% endif %}
+                <div class="field">
+                {% if field.name != 'submit' %}
+                    {{ field.label(_class="field-label")}}
+                {% endif %}
                     {{ field }}
-                </label>
                 {% for error in field.errors %}
-                    {{ error }}
+                    <div class="alert-help alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
                 {% endfor %}
-                </p>
+                </div>
             {% endfor %}
-    </form>
+            {% if error %}
+                <div class="alert-help alert alert-warning" role="alert">
+                    <b>Аккаунт с таким адресом электронной почты уже существует!</b>
+                </div>
+            {% endif %}
+        </div>
+        </form>
+    </div>
+    </div>
 {% endblock %}

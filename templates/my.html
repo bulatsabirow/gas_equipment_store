@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block style %}
+    <link href="../static/css/my.css" rel="stylesheet">
+{% endblock %}
+{% block body %}
+    <div class="my-wrapper">
+        <h1>Личный кабинет</h1>
+        <button onclick="document.location.href = '{{ url_for("change_user_data",user_email=current_user.email) }}'"
+                class="btn btn-warning" style="margin-bottom: 10px">Редактирование данных</button>
+        <h5>Ваше имя: {{ current_user.name }}</h5>
+        <h5>Ваш адрес электронной почты: {{ current_user.email }}</h5>
+        <h2>Мои заказы</h2>
+        <table class="table my-table table-info">
+            <tr>
+                <th scope="col">UUID-номер</th>
+                <th scope="col">Время</th>
+                <th>Итоговая цена</th>
+            </tr>
+            {% for item in bookings %}
+            <tr>
+                <td><a href="{{ url_for('my_orders_view', uuid_id=item.uuid_key) }}">{{ item.uuid_key }}</a></td>
+                <td>{{ item.time }}</td>
+                <td>{{ item.total_amount }}₽</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

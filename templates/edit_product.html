@@ -1,20 +1,32 @@
 {% extends 'base.html' %}
+{% block style %}
+    <link href="../static/css/edit-product.css" rel="stylesheet">
+{% endblock %}
 {% block body %}
-    <a href="{{ url_for('goods_list') }}">Вернуться на главную страницу</a>
-    <form method="post" enctype="multipart/form-data">
-        {{ form.csrf_token() }}
-        {% for field in form if field.name != 'csrf_token' %}
-            <p>
-            <label>
-                {% if field.name != 'submit' %}
-                    {{ field.label() }}
-                {% endif %}
-                {{ field }}
-            </label>
-            {% for error in field.errors %}
-                {{ error }}
+    <div class="edit-product-wrapper">
+        <div class="edit-product-form">
+                <button class="btn btn-info" onclick="document.location.href = '{{ url_for('admin_view') }}';">
+                Панель администрирования
+                </button>
+            <form method="post" enctype="multipart/form-data">
+            {{ form.csrf_token() }}
+            {% for field in form if field.name != 'csrf_token' %}
+                <div class="field">
+                    {% if field.name != 'submit' %}
+                        {{ field.label(_class='field-label') }}
+                    {% endif %}
+                    {{ field }}
+                {% for error in field.errors %}
+                    {{ error }}
+                {% endfor %}
+                </div>
             {% endfor %}
-            </p>
-        {% endfor %}
-    </form>
+            {% if error %}
+                <div class="alert alert-danger">
+                    <p style="font-weight: bold;text-align: center;margin-bottom: 0">Такой товар уже существует!</p>
+                </div>
+            {% endif %}
+            </form>
+        </div>
+    </div>
 {% endblock %}

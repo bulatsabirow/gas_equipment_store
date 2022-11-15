@@ -77,7 +77,7 @@
                             </button>
                             <div id="wishlist-btn-description-id{{ product.id }}"
                                  class="wishlist-btn-description elem-hidden">
-                                {% if product.id not in session.get('cart', {}) %}
+                                {% if product.id not in session.get('wishlist', {}) %}
                                     Добавить в избранное
                                 {% else %}
                                     Перейти в избранное
