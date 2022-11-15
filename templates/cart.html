@@ -21,10 +21,7 @@
                             method: 'post',
                             dataType: 'html',
                             success: function (data) {
-                                alert(data);
                                 data = JSON.parse(data);
-                                alert(data['price']);
-                                alert(data['count']);
                                 document.querySelector('#total_price').innerText = 'Всего: ' +
                                     `${Math.round((+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] - (+data['count']) * (+data['price'])) * 100) / 100}₽`;
                                 if (+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] === 0) {
@@ -42,13 +39,7 @@
                             data: {'count': +$("#count-input{{ item.id }}").val()},
                             dataType: 'html',
                             success: function (data) {
-                                {#alert('s');#}
-                                {#alert(data);#}
                                 data = JSON.parse(data);
-                                {#alert('doc:'+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0]);#}
-                                {#alert('val:' + +$("#count-input{{ item.id }}").val());#}
-                                {#alert(data['prev']);#}
-                                {#alert(data['up']);#}
                                 let res = `Всего: ${Math.round((+document.querySelector('#total_price').innerText.match(/[\d/.]+/g)[0] + (+$("#count-input{{ item.id }}").val() - data['prev']) * {{ item.price }})*100)/100}₽`;
                                 document.querySelector('#total_price').innerText = res;
                                 document.querySelector('#product{{ item.id }}-price').innerText = `Стоимость: ${Math.round((+$("#count-input{{ item.id }}").val() * {{ item.price }})*100)/100}₽`;
